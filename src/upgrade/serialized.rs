@@ -1,7 +1,7 @@
 //! Contract upgrade functions that work as expected in conjunction with
 //! `#[near_bindgen]`.
 
-use near_sdk::{env, GasWeight, Promise};
+use near_sdk::{env, GasWeight, NearToken, Promise};
 
 use super::PostUpgrade;
 
@@ -20,7 +20,7 @@ pub fn upgrade(code: Vec<u8>, post_upgrade: PostUpgrade) -> Promise {
         .function_call_weight(
             post_upgrade.method,
             post_upgrade.args,
-            compat_yoctonear!(0u128),
+            NearToken::from_yoctonear(0u128),
             post_upgrade.minimum_gas,
             GasWeight(u64::MAX),
         )

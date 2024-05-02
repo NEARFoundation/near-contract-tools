@@ -31,8 +31,6 @@
 //! * (ERR) The external functions exposed in [`OwnerExternal`] call their
 //!   respective [`Owner`] methods and expect the same invariants.
 
-#[cfg(feature = "near-sdk-4")]
-use near_sdk::borsh;
 use near_sdk::{borsh::BorshSerialize, env, require, AccountId, BorshStorageKey};
 use near_sdk_contract_tools_macros::event;
 
@@ -69,13 +67,13 @@ pub enum OwnerEvent {
     },
 }
 
-compat_derive_storage_key! {
-    #[derive(Debug, Clone)]
-    enum StorageKey {
-        IsInitialized,
-        Owner,
-        ProposedOwner,
-    }
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
+#[derive(Debug, Clone)]
+enum StorageKey {
+    IsInitialized,
+    Owner,
+    ProposedOwner,
 }
 
 /// Internal functions for [`Owner`]. Using these methods may result in unexpected behavior.
@@ -353,7 +351,7 @@ pub use ext::*;
 
 #[cfg(test)]
 mod tests {
-    use near_sdk::{near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId};
+    use near_sdk::{near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId, NearToken};
 
     use crate::{
         owner::{Owner, OwnerExternal},
@@ -418,7 +416,7 @@ mod tests {
         assert_eq!(contract.own_get_owner(), Some(owner_id.clone()));
         testing_env!(VMContextBuilder::new()
             .predecessor_account_id(owner_id)
-            .attached_deposit(compat_yoctonear!(1u128))
+            .attached_deposit(NearToken::from_yoctonear(1u128))
             .build());
         contract.own_renounce_owner();
         assert_eq!(contract.own_get_owner(), None);
@@ -433,7 +431,7 @@ mod tests {
 
         testing_env!(VMContextBuilder::new()
             .predecessor_account_id(owner_id)
-            .attached_deposit(compat_yoctonear!(1u128))
+            .attached_deposit(NearToken::from_yoctonear(1u128))
             .build());
 
         assert_eq!(contract.own_get_proposed_owner(), None);
@@ -453,7 +451,7 @@ mod tests {
 
         testing_env!(VMContextBuilder::new()
             .predecessor_account_id(proposed_owner.clone())
-            .attached_deposit(compat_yoctonear!(1u128))
+            .attached_deposit(NearToken::from_yoctonear(1u128))
             .build());
 
         contract.own_propose_owner(Some(proposed_owner));
@@ -484,14 +482,14 @@ mod tests {
 
         testing_env!(VMContextBuilder::new()
             .predecessor_account_id(owner_id)
-            .attached_deposit(compat_yoctonear!(1u128))
+            .attached_deposit(NearToken::from_yoctonear(1u128))
             .build());
 
         contract.own_propose_owner(Some(proposed_owner.clone()));
 
         testing_env!(VMContextBuilder::new()
             .predecessor_account_id(proposed_owner.clone())
-            .attached_deposit(compat_yoctonear!(1u128))
+            .attached_deposit(NearToken::from_yoctonear(1u128))
             .build());
 
         contract.own_accept_owner();
@@ -511,7 +509,7 @@ mod tests {
 
         testing_env!(VMContextBuilder::new()
             .predecessor_account_id(owner_id)
-            .attached_deposit(compat_yoctonear!(1u128))
+            .attached_deposit(NearToken::from_yoctonear(1u128))
             .build());
 
         contract.own_propose_owner(Some(proposed_owner));
@@ -520,7 +518,7 @@ mod tests {
 
         testing_env!(VMContextBuilder::new()
             .predecessor_account_id(third_party)
-            .attached_deposit(compat_yoctonear!(1u128))
+            .attached_deposit(NearToken::from_yoctonear(1u128))
             .build());
 
         contract.own_accept_owner();
@@ -537,7 +535,7 @@ mod tests {
 
         testing_env!(VMContextBuilder::new()
             .predecessor_account_id(owner_id)
-            .attached_deposit(compat_yoctonear!(1u128))
+            .attached_deposit(NearToken::from_yoctonear(1u128))
             .build());
 
         contract.own_propose_owner(Some(proposed_owner.clone()));
@@ -562,6 +560,7 @@ mod tests {
         assert_eq!(contract.own_get_owner(), Some(new_owner));
         assert_eq!(contract.own_get_proposed_owner(), None);
     }
+
     #[test]
     fn update_proposed_unchecked() {
         let owner_id: AccountId = "owner".parse().unwrap();

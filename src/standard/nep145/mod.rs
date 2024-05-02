@@ -3,14 +3,12 @@
 
 use std::cmp::Ordering;
 
-#[cfg(feature = "near-sdk-4")]
-use near_sdk::borsh;
 use near_sdk::{
     borsh::{BorshDeserialize, BorshSerialize},
     env,
     json_types::U128,
     serde::{Deserialize, Serialize},
-    AccountId, BorshStorageKey,
+    AccountId, BorshStorageKey, NearToken,
 };
 
 use crate::{hook::Hook, slot::Slot, DefaultStorageKey};
@@ -26,16 +24,16 @@ const PANIC_MESSAGE_STORAGE_AVAILABLE_OVERFLOW: &str = "storage available balanc
 const PANIC_MESSAGE_INCONSISTENT_STATE_AVAILABLE: &str =
     "inconsistent state: available storage balance greater than total storage balance";
 
-compat_derive_serde_borsh! {
-    /// An account's storage balance.
-    #[derive(Clone, Debug, PartialEq, Eq)]
-    pub struct StorageBalance {
-        /// The total amount of storage balance.
-        pub total: U128,
+/// An account's storage balance.
+#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(crate = "near_sdk::serde")]
+#[borsh(crate = "near_sdk::borsh")]
+pub struct StorageBalance {
+    /// The total amount of storage balance.
+    pub total: U128,
 
-        /// The amount of storage balance that is available for use.
-        pub available: U128,
-    }
+    /// The amount of storage balance that is available for use.
+    pub available: U128,
 }
 
 impl Default for StorageBalance {
@@ -47,47 +45,27 @@ impl Default for StorageBalance {
     }
 }
 
-compat_derive_serde_borsh! {
-    /// Storage balance bounds.
-    #[derive(Clone, Debug, PartialEq, Eq)]
-    pub struct StorageBalanceBounds {
-        /// The minimum storage balance.
-        pub min: U128,
+/// Storage balance bounds.
+#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(crate = "near_sdk::serde")]
+#[borsh(crate = "near_sdk::borsh")]
+pub struct StorageBalanceBounds {
+    /// The minimum storage balance.
+    pub min: U128,
 
-        /// The maximum storage balance.
-        pub max: Option<U128>,
-    }
+    /// The maximum storage balance.
+    pub max: Option<U128>,
 }
 
 impl StorageBalanceBounds {
-    /// **COMPATIBLE (UNSTABLE)**
-    ///
     /// Restricts a balance to be within the bounds.
-    pub fn compat_bound(
-        &self,
-        balance: crate::CompatNearToken,
-        registration_only: bool,
-    ) -> crate::CompatNearToken {
-        #[cfg(feature = "near-sdk-4")]
-        {
-            if registration_only {
-                self.min.0
-            } else if let Some(U128(max)) = self.max {
-                u128::min(max, balance)
-            } else {
-                balance
-            }
-        }
-
-        #[cfg(feature = "near-sdk-5")]
-        {
-            if registration_only {
-                near_sdk::NearToken::from_yoctonear(self.min.0)
-            } else if let Some(U128(max)) = self.max {
-                near_sdk::NearToken::from_yoctonear(u128::min(max, balance.as_yoctonear()))
-            } else {
-                balance
-            }
+    pub fn bound(&self, balance: NearToken, registration_only: bool) -> NearToken {
+        if registration_only {
+            NearToken::from_yoctonear(self.min.0)
+        } else if let Some(U128(max)) = self.max {
+            NearToken::from_yoctonear(u128::min(max, balance.as_yoctonear()))
+        } else {
+            balance
         }
     }
 }
@@ -101,22 +79,22 @@ impl Default for StorageBalanceBounds {
     }
 }
 
-compat_derive_storage_key! {
-    enum StorageKey<'a> {
-        BalanceBounds,
-        Account(&'a AccountId),
-    }
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
+enum StorageKey<'a> {
+    BalanceBounds,
+    Account(&'a AccountId),
 }
 
-compat_derive_serde_borsh! {[Serialize, BorshSerialize],
-    /// Describes a force unregister action.
-    #[derive(Clone, Debug, PartialEq, Eq)]
-    pub struct Nep145ForceUnregister<'a> {
-        /// The account to be unregistered.
-        pub account_id: &'a AccountId,
-        /// The account's balance at the time of unregistration.
-        pub balance: StorageBalance,
-    }
+/// Describes a force unregister action.
+#[derive(Serialize, BorshSerialize, Clone, Debug, PartialEq, Eq)]
+#[serde(crate = "near_sdk::serde")]
+#[borsh(crate = "near_sdk::borsh")]
+pub struct Nep145ForceUnregister<'a> {
+    /// The account to be unregistered.
+    pub account_id: &'a AccountId,
+    /// The account's balance at the time of unregistration.
+    pub balance: StorageBalance,
 }
 
 /// NEP-145 Storage Management internal controller interface.
@@ -217,9 +195,6 @@ pub trait Nep145Controller {
             Ordering::Equal => {}
             Ordering::Greater => {
                 let storage_consumed = storage_usage_end - storage_usage_start;
-                #[cfg(feature = "near-sdk-4")]
-                let storage_fee = env::storage_byte_cost() * storage_consumed as u128;
-                #[cfg(feature = "near-sdk-5")]
                 let storage_fee =
                     env::storage_byte_cost().as_yoctonear() * storage_consumed as u128;
 
@@ -227,9 +202,6 @@ pub trait Nep145Controller {
             }
             Ordering::Less => {
                 let storage_released = storage_usage_start - storage_usage_end;
-                #[cfg(feature = "near-sdk-4")]
-                let storage_credit = env::storage_byte_cost() * storage_released as u128;
-                #[cfg(feature = "near-sdk-5")]
                 let storage_credit =
                     env::storage_byte_cost().as_yoctonear() * storage_released as u128;
 

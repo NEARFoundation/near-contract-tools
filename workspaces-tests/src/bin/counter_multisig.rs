@@ -1,11 +1,14 @@
 #![allow(missing_docs)]
 
-workspaces_tests::near_sdk!();
-compat_use_borsh!();
-use near_sdk::{env, near_bindgen, serde::Serialize, BorshStorageKey, PanicOnDefault};
+use near_sdk::{
+    borsh::{BorshDeserialize, BorshSerialize},
+    env, near_bindgen,
+    serde::Serialize,
+    BorshStorageKey, PanicOnDefault,
+};
 use near_sdk_contract_tools::{
     approval::{simple_multisig::Configuration, *},
-    compat_derive_borsh, compat_derive_serde_borsh, compat_derive_storage_key, compat_use_borsh,
+    compat_derive_serde_borsh, compat_derive_storage_key,
     rbac::Rbac,
     Rbac, SimpleMultisig,
 };
@@ -47,14 +50,14 @@ impl Action<Contract> for CounterAction {
     }
 }
 
-compat_derive_borsh! {
-    #[derive(PanicOnDefault, Rbac, SimpleMultisig)]
-    #[simple_multisig(action = "CounterAction", role = "Role::Member")]
-    #[rbac(roles = "Role")]
-    #[near_bindgen]
-    pub struct Contract {
-        pub counter: u32,
-    }
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
+#[derive(PanicOnDefault, Rbac, SimpleMultisig)]
+#[simple_multisig(action = "CounterAction", role = "Role::Member")]
+#[rbac(roles = "Role")]
+#[near_bindgen]
+pub struct Contract {
+    pub counter: u32,
 }
 
 #[near_bindgen]

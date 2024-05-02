@@ -6,13 +6,13 @@ use near_sdk_contract_tools::{
     compat_derive_borsh, compat_near_to_u128, utils::apply_storage_fee_and_refund,
 };
 
-compat_derive_borsh! {
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
     #[derive(PanicOnDefault)]
     #[near_bindgen]
     pub struct ContractBad {
         pub items: Vector<String>,
     }
-}
 
 #[near_bindgen]
 impl ContractBad {

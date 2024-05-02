@@ -37,9 +37,6 @@ pub unsafe fn upgrade(post_upgrade: PostUpgrade) {
     // Deploy the contract code
     sys::promise_batch_action_deploy_contract(promise_id, u64::MAX, 0);
 
-    #[cfg(feature = "near-sdk-4")]
-    let gas = post_upgrade.minimum_gas.0;
-    #[cfg(feature = "near-sdk-5")]
     let gas = post_upgrade.minimum_gas.as_gas();
 
     // Call promise to migrate the state.

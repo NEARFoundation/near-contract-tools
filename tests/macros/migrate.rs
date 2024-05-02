@@ -1,18 +1,17 @@
-compat_use_borsh!();
-use near_sdk::{env, near_bindgen};
-use near_sdk_contract_tools::{
-    compat_derive_borsh, compat_use_borsh, migrate::MigrateHook, Migrate,
+use near_sdk::{
+    borsh::{BorshDeserialize, BorshSerialize},
+    env, near_bindgen,
 };
+use near_sdk_contract_tools::{migrate::MigrateHook, Migrate};
 
 mod old {
     use super::*;
 
-    compat_derive_borsh! {
-        #[derive(Debug)]
-        #[near_bindgen]
-        pub struct Old {
-            pub foo: u64,
-        }
+    #[derive(BorshSerialize, BorshDeserialize, Debug)]
+    #[borsh(crate = "near_sdk::borsh")]
+    #[near_bindgen]
+    pub struct Old {
+        pub foo: u64,
     }
 
     #[near_bindgen]
@@ -24,13 +23,12 @@ mod old {
     }
 }
 
-compat_derive_borsh! {
-    #[derive(Migrate)]
-    #[migrate(from = "old::Old")]
-    #[near_bindgen]
-    struct MyContract {
-        pub bar: u64,
-    }
+#[derive(BorshSerialize, BorshDeserialize, Migrate)]
+#[borsh(crate = "near_sdk::borsh")]
+#[migrate(from = "old::Old")]
+#[near_bindgen]
+struct MyContract {
+    pub bar: u64,
 }
 
 impl MigrateHook for MyContract {

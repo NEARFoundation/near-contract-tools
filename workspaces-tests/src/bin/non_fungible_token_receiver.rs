@@ -8,11 +8,11 @@ use near_sdk_contract_tools::{
     standard::nep171::{ext_nep171, *},
 };
 
-compat_derive_borsh! {
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
     #[derive(PanicOnDefault)]
     #[near_bindgen]
     pub struct Contract {}
-}
 
 #[near_bindgen]
 impl Nep171Receiver for Contract {

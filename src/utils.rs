@@ -1,6 +1,6 @@
 //! Utility functions for storage key generation, storage fee management
 
-use near_sdk::{env, require, Promise};
+use near_sdk::{env, require, NearToken, Promise};
 
 /// Concatenate bytes to form a key. Useful for generating storage keys.
 ///
@@ -51,18 +51,17 @@ pub fn apply_storage_fee_and_refund(
     // Storage consumption after storage event
     let storage_usage_end = env::storage_usage();
 
-    #[cfg(feature = "near-sdk-4")]
     let storage_byte_cost = env::storage_byte_cost();
-    #[cfg(feature = "near-sdk-5")]
-    let storage_byte_cost = env::storage_byte_cost().as_yoctonear();
 
     // Storage fee incurred by storage event, clamped >= 0
-    let storage_fee = compat_yoctonear!(storage_usage_end.saturating_sub(initial_storage_usage))
-        .checked_mul(storage_byte_cost)
+    let storage_fee = storage_byte_cost
+        .checked_mul(u128::from(
+            storage_usage_end.saturating_sub(initial_storage_usage),
+        ))
         .unwrap_or_else(|| env::panic_str("Storage fee overflows"));
 
     let total_required_deposit = storage_fee
-        .checked_add(compat_yoctonear!(additional_fees))
+        .checked_add(NearToken::from_yoctonear(additional_fees))
         .unwrap_or_else(|| env::panic_str("Required deposit overflows u128"));
 
     let attached_deposit = env::attached_deposit();
@@ -77,7 +76,7 @@ pub fn apply_storage_fee_and_refund(
     let refund = attached_deposit.saturating_sub(total_required_deposit);
 
     // Send refund transfer if required
-    if refund > compat_yoctonear!(0u128) {
+    if !refund.is_zero() {
         Some(Promise::new(env::predecessor_account_id()).transfer(refund))
     } else {
         None
@@ -87,7 +86,7 @@ pub fn apply_storage_fee_and_refund(
 /// Asserts that the attached deposit is greater than zero.
 pub fn assert_nonzero_deposit() {
     require!(
-        env::attached_deposit() > compat_yoctonear!(0u128),
+        !env::attached_deposit().is_zero(),
         "Attached deposit must be greater than zero"
     );
 }

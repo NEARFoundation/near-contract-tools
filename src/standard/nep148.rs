@@ -1,8 +1,8 @@
 //! NEP-148 fungible token metadata implementation
 //! <https://github.com/near/NEPs/blob/master/neps/nep-0148.md>
 
-compat_use_borsh!();
 use near_sdk::{
+    borsh::{BorshDeserialize, BorshSerialize},
     env,
     json_types::Base64VecU8,
     serde::{Deserialize, Serialize},
@@ -18,28 +18,28 @@ pub const FT_METADATA_SPEC: &str = "ft-1.0.0";
 /// Error message for unset metadata.
 pub const ERR_METADATA_UNSET: &str = "NEP-148 metadata is not set";
 
-compat_derive_serde_borsh! {
-    /// NEP-148-compatible metadata struct
-    #[derive(Eq, PartialEq, Clone, Debug)]
-    pub struct FungibleTokenMetadata {
-        /// Version of the NEP-148 spec
-        pub spec: String,
-        /// Human-friendly name of the token contract
-        pub name: String,
-        /// Short, ideally unique string to concisely identify the token contract
-        pub symbol: String,
-        /// String representation (HTTP URL, data URL, IPFS, Arweave, etc.) of an
-        /// icon for this token
-        pub icon: Option<String>,
-        /// External (off-chain) URL to additional JSON metadata for this token contract
-        pub reference: Option<String>,
-        /// Hash of the content that should be present in the `reference` field.
-        /// For tamper protection.
-        pub reference_hash: Option<Base64VecU8>,
-        /// Cosmetic. Number of base-10 decimal places to shift the floating point.
-        /// 24 is a common value.
-        pub decimals: u8,
-    }
+/// NEP-148-compatible metadata struct
+#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Eq, PartialEq, Clone, Debug)]
+#[serde(crate = "near_sdk::serde")]
+#[borsh(crate = "near_sdk::borsh")]
+pub struct FungibleTokenMetadata {
+    /// Version of the NEP-148 spec
+    pub spec: String,
+    /// Human-friendly name of the token contract
+    pub name: String,
+    /// Short, ideally unique string to concisely identify the token contract
+    pub symbol: String,
+    /// String representation (HTTP URL, data URL, IPFS, Arweave, etc.) of an
+    /// icon for this token
+    pub icon: Option<String>,
+    /// External (off-chain) URL to additional JSON metadata for this token contract
+    pub reference: Option<String>,
+    /// Hash of the content that should be present in the `reference` field.
+    /// For tamper protection.
+    pub reference_hash: Option<Base64VecU8>,
+    /// Cosmetic. Number of base-10 decimal places to shift the floating point.
+    /// 24 is a common value.
+    pub decimals: u8,
 }
 
 impl FungibleTokenMetadata {
@@ -99,10 +99,10 @@ impl FungibleTokenMetadata {
     }
 }
 
-compat_derive_storage_key! {
-    enum StorageKey {
-        Metadata,
-    }
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
+enum StorageKey {
+    Metadata,
 }
 
 /// Internal functions for [`Nep148Controller`].

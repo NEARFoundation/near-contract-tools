@@ -4,7 +4,7 @@
 pub fn main() {}
 
 workspaces_tests::near_sdk!();
-compat_use_borsh!();
+use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{
     env,
     json_types::{Base64VecU8, U128},
@@ -12,14 +12,14 @@ use near_sdk::{
     store::Vector,
     PanicOnDefault,
 };
-use near_sdk_contract_tools::{compat_derive_borsh, compat_near_to_u128, compat_use_borsh, ft::*};
+use near_sdk_contract_tools::{compat_derive_borsh, compat_near_to_u128, ft::*};
 
-compat_derive_borsh! {
-    #[derive(PanicOnDefault, FungibleToken)]
-    #[near_bindgen]
-    pub struct Contract {
-        blobs: Vector<Vec<u8>>,
-    }
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
+#[derive(PanicOnDefault, FungibleToken)]
+#[near_bindgen]
+pub struct Contract {
+    blobs: Vector<Vec<u8>>,
 }
 
 #[near_bindgen]

@@ -4,7 +4,8 @@ workspaces_tests::predicate!();
 use near_sdk::{env, log, near_bindgen, PanicOnDefault};
 use near_sdk_contract_tools::{compat_derive_borsh, hook::Hook, standard::nep171::*, Nep171};
 
-compat_derive_borsh! {
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
     #[derive(PanicOnDefault, Nep171)]
     #[nep171(transfer_hook = "Self")]
     #[near_bindgen]
@@ -22,7 +23,6 @@ compat_derive_borsh! {
             r
         }
     }
-}
 
 #[near_bindgen]
 impl Contract {

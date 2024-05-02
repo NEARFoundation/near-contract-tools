@@ -7,11 +7,11 @@ use near_sdk::{
 };
 use near_sdk_contract_tools::{compat_derive_borsh, compat_yoctonear, ft::*};
 
-compat_derive_borsh! {
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
     #[derive(PanicOnDefault)]
     #[near_bindgen]
     pub struct Contract {}
-}
 
 #[near_bindgen]
 impl Nep141Receiver for Contract {

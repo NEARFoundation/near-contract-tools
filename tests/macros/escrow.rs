@@ -1,20 +1,22 @@
-compat_use_borsh!();
 use near_sdk::{
-    json_types::U64, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId,
-    BorshStorageKey, VMContext,
+    borsh::{BorshDeserialize, BorshSerialize},
+    json_types::U64,
+    near_bindgen,
+    test_utils::VMContextBuilder,
+    testing_env, AccountId, BorshStorageKey, VMContext,
 };
 use near_sdk_contract_tools::escrow::{Escrow, EscrowInternal};
 use near_sdk_contract_tools::{
-    compat_derive_storage_key, compat_use_borsh, Escrow, COMPAT_ONE_YOCTONEAR,
+    Escrow, COMPAT_ONE_YOCTONEAR,
 };
 
 const ID: U64 = U64(1);
 const IS_NOT_READY: bool = false;
 
-compat_derive_storage_key! {
-    enum StorageKey {
-        MyStorageKey,
-    }
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
+enum StorageKey {
+    MyStorageKey,
 }
 
 mod ensure_default {

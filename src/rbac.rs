@@ -27,9 +27,9 @@
 //!     account does not have the specified role.
 use std::iter::FusedIterator;
 
-compat_use_borsh!(BorshSerialize);
 use near_sdk::{
-    collections::UnorderedSet, env, require, AccountId, BorshStorageKey, IntoStorageKey,
+    borsh::BorshSerialize, collections::UnorderedSet, env, require, AccountId, BorshStorageKey,
+    IntoStorageKey,
 };
 
 use crate::{slot::Slot, DefaultStorageKey};
@@ -37,10 +37,10 @@ use crate::{slot::Slot, DefaultStorageKey};
 const REQUIRE_ROLE_FAIL_MESSAGE: &str = "Unauthorized role";
 const PROHIBIT_ROLE_FAIL_MESSAGE: &str = "Prohibited role";
 
-compat_derive_storage_key! {
-    enum StorageKey<R> {
-        Role(R),
-    }
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
+enum StorageKey<R> {
+    Role(R),
 }
 
 /// Internal functions for [`Rbac`]. Using these methods may result in unexpected behavior.
@@ -211,8 +211,6 @@ impl ExactSizeIterator for Iter {}
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "near-sdk-4")]
-    use near_sdk::borsh;
     use near_sdk::{
         borsh::BorshSerialize, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId,
         BorshStorageKey,
@@ -221,11 +219,11 @@ mod tests {
 
     use super::Rbac;
 
-    compat_derive_storage_key! {
-        enum Role {
-            A,
-            B,
-        }
+    #[derive(BorshSerialize, BorshStorageKey)]
+    #[borsh(crate = "near_sdk::borsh")]
+    enum Role {
+        A,
+        B,
     }
 
     #[derive(Rbac)]

@@ -1,19 +1,16 @@
-compat_use_borsh!();
+use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{
     env, json_types::U128, log, near_bindgen, store::LookupMap, AccountId, PanicOnDefault,
 };
-use near_sdk_contract_tools::{
-    compat_derive_borsh, compat_near_to_u128, compat_use_borsh, hook::Hook, standard::nep145::*,
-    Nep145,
-};
+use near_sdk_contract_tools::{compat_near_to_u128, hook::Hook, standard::nep145::*, Nep145};
 
-compat_derive_borsh! {
-    #[derive(PanicOnDefault, Nep145)]
-    #[nep145(force_unregister_hook = "ForceUnregisterHook")]
-    #[near_bindgen]
-    pub struct Contract {
-        pub storage: LookupMap<AccountId, Vec<u64>>,
-    }
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
+#[derive(PanicOnDefault, Nep145)]
+#[nep145(force_unregister_hook = "ForceUnregisterHook")]
+#[near_bindgen]
+pub struct Contract {
+    pub storage: LookupMap<AccountId, Vec<u64>>,
 }
 
 pub struct ForceUnregisterHook;

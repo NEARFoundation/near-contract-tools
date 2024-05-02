@@ -1,7 +1,6 @@
-compat_use_borsh!(BorshSerialize);
-use near_sdk::{near_bindgen, BorshStorageKey};
+use near_sdk::{borsh::BorshSerialize, near_bindgen, BorshStorageKey};
 use near_sdk_contract_tools::{
-    compat_derive_storage_key, compat_use_borsh,
+    compat_derive_storage_key,
     pause::{Pause, PauseExternal},
     Pause,
 };

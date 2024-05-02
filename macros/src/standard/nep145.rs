@@ -69,7 +69,7 @@ pub fn expand(meta: Nep145Meta) -> Result<TokenStream, darling::Error> {
                 let bounds = Nep145Controller::get_storage_balance_bounds(self);
 
                 let attached = env::attached_deposit();
-                let amount = bounds.compat_bound(attached, registration_only.unwrap_or(false));
+                let amount = bounds.bound(attached, registration_only.unwrap_or(false));
                 let refund = attached.checked_sub(amount).unwrap_or_else(|| {
                     env::panic_str(&format!(
                         "Attached deposit {} is less than required {}",

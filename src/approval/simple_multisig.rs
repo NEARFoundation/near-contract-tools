@@ -3,8 +3,8 @@
 
 use std::marker::PhantomData;
 
-compat_use_borsh!();
 use near_sdk::{
+    borsh::{BorshDeserialize, BorshSerialize},
     env,
     serde::{Deserialize, Serialize},
     AccountId,
@@ -23,21 +23,21 @@ pub trait AccountAuthorizer {
     fn is_account_authorized(account_id: &AccountId) -> Result<(), Self::AuthorizationError>;
 }
 
-compat_derive_serde_borsh! {
-    /// M (threshold) of N approval scheme
-    #[derive(Clone, Debug)]
-    pub struct Configuration<Au: AccountAuthorizer> {
-        /// How many approvals are required?
-        pub threshold: u8,
-        /// A request cannot be executed, and can be deleted by any
-        /// approval-eligible member after this period has elapsed.
-        /// 0 = perpetual validity, no deletion
-        pub validity_period_nanoseconds: u64,
-        #[cfg_attr(feature = "near-sdk-4", borsh_skip)]
-        #[cfg_attr(feature = "near-sdk-5", borsh(skip))]
-        #[serde(skip)]
-        _authorizer: PhantomData<Au>,
-    }
+/// M (threshold) of N approval scheme
+#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Clone, Debug)]
+#[serde(crate = "near_sdk::serde")]
+#[borsh(crate = "near_sdk::borsh")]
+pub struct Configuration<Au: AccountAuthorizer> {
+    /// How many approvals are required?
+    pub threshold: u8,
+    /// A request cannot be executed, and can be deleted by any
+    /// approval-eligible member after this period has elapsed.
+    /// 0 = perpetual validity, no deletion
+    pub validity_period_nanoseconds: u64,
+    #[cfg_attr(feature = "near-sdk-4", borsh_skip)]
+    #[cfg_attr(feature = "near-sdk-5", borsh(skip))]
+    #[serde(skip)]
+    _authorizer: PhantomData<Au>,
 }
 
 impl<Au: AccountAuthorizer> Configuration<Au> {
@@ -63,15 +63,15 @@ impl<Au: AccountAuthorizer> Configuration<Au> {
     }
 }
 
-compat_derive_serde_borsh! {
-    /// Approval state for simple multisig
-    #[derive(Debug)]
-    pub struct ApprovalState {
-        /// List of accounts that have approved an action thus far
-        pub approved_by: Vec<AccountId>,
-        /// Network timestamp when the request was created
-        pub created_at_nanoseconds: u64,
-    }
+/// Approval state for simple multisig
+#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+#[borsh(crate = "near_sdk::borsh")]
+pub struct ApprovalState {
+    /// List of accounts that have approved an action thus far
+    pub approved_by: Vec<AccountId>,
+    /// Network timestamp when the request was created
+    pub created_at_nanoseconds: u64,
 }
 
 impl Default for ApprovalState {
@@ -211,9 +211,11 @@ pub mod macro_types {
 
 #[cfg(test)]
 mod tests {
-    compat_use_borsh!();
     use near_sdk::{
-        env, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey,
+        borsh::{BorshDeserialize, BorshSerialize},
+        env, near_bindgen,
+        test_utils::VMContextBuilder,
+        testing_env, AccountId, BorshStorageKey,
     };
     use thiserror::Error;
 
@@ -227,11 +229,11 @@ mod tests {
         Rbac,
     };
 
-    compat_derive_borsh! {
-        enum Action {
-            SayHello,
-            SayGoodbye,
-        }
+    #[derive(BorshSerialize, BorshDeserialize)]
+    #[borsh(crate = "near_sdk::borsh")]
+    enum Action {
+        SayHello,
+        SayGoodbye,
     }
 
     impl crate::approval::Action<Contract> for Action {
@@ -245,18 +247,17 @@ mod tests {
         }
     }
 
-    compat_derive_storage_key! {
-        enum Role {
-            Multisig,
-        }
+    #[derive(BorshSerialize, BorshStorageKey)]
+    #[borsh(crate = "near_sdk::borsh")]
+    enum Role {
+        Multisig,
     }
 
-    compat_derive_borsh! {
-        #[derive(Rbac, Debug)]
-        #[rbac(roles = "Role", crate = "crate")]
-        #[near_bindgen]
-        struct Contract {}
-    }
+    #[derive(BorshSerialize, BorshDeserialize, Rbac, Debug)]
+    #[borsh(crate = "near_sdk::borsh")]
+    #[rbac(roles = "Role", crate = "crate")]
+    #[near_bindgen]
+    struct Contract {}
 
     impl ApprovalManagerInternal<Action, ApprovalState, Configuration<Self>> for Contract {
         fn root() -> Slot<()> {

@@ -4,7 +4,7 @@
 pub fn main() {}
 
 workspaces_tests::near_sdk!();
-compat_use_borsh!();
+use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault, Promise};
 use near_sdk_contract_tools::{
     approval::{
@@ -12,7 +12,7 @@ use near_sdk_contract_tools::{
         simple_multisig::{ApprovalState, Configuration},
         ApprovalManager,
     },
-    compat_derive_borsh, compat_derive_storage_key, compat_use_borsh,
+    compat_derive_borsh, compat_derive_storage_key,
     rbac::Rbac,
     Rbac, SimpleMultisig,
 };
@@ -24,13 +24,13 @@ compat_derive_storage_key! {
     }
 }
 
-compat_derive_borsh! {
-    #[derive(PanicOnDefault, Rbac, SimpleMultisig)]
-    #[simple_multisig(action = "NativeTransactionAction", role = "Role::Multisig")]
-    #[rbac(roles = "Role")]
-    #[near_bindgen]
-    pub struct Contract {}
-}
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
+#[derive(PanicOnDefault, Rbac, SimpleMultisig)]
+#[simple_multisig(action = "NativeTransactionAction", role = "Role::Multisig")]
+#[rbac(roles = "Role")]
+#[near_bindgen]
+pub struct Contract {}
 
 #[near_bindgen]
 impl Contract {

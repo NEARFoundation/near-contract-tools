@@ -1,11 +1,12 @@
-compat_use_borsh!();
 use near_sdk::{
-    env, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey,
+    borsh::{BorshDeserialize, BorshSerialize},
+    env, near_bindgen,
+    test_utils::VMContextBuilder,
+    testing_env, AccountId, BorshStorageKey,
 };
 use near_sdk_contract_tools::{
-    compat_derive_borsh, compat_derive_storage_key, compat_use_borsh, escrow::Escrow,
-    migrate::MigrateHook, owner::Owner, pause::Pause, rbac::Rbac, standard::nep297::Event, Escrow,
-    Migrate, Owner, Pause, Rbac,
+    escrow::Escrow, migrate::MigrateHook, owner::Owner, pause::Pause, rbac::Rbac,
+    standard::nep297::Event, Escrow, Migrate, Owner, Pause, Rbac,
 };
 
 mod escrow;
@@ -35,34 +36,33 @@ mod my_event {
     }
 }
 
-compat_derive_storage_key! {
-    enum StorageKey {
-        Owner,
-        Pause,
-        Rbac,
-    }
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
+enum StorageKey {
+    Owner,
+    Pause,
+    Rbac,
 }
 
-compat_derive_storage_key! {
-    pub enum Role {
-        CanPause,
-        CanSetValue,
-    }
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
+pub enum Role {
+    CanPause,
+    CanSetValue,
 }
 
 mod integration {
     use super::*;
 
-    compat_derive_borsh! {
-        #[derive(Owner, Pause, Rbac, Escrow)]
-        #[owner(storage_key = "StorageKey::Owner")]
-        #[pause(storage_key = "StorageKey::Pause")]
-        #[rbac(storage_key = "StorageKey::Rbac", roles = "Role")]
-        #[escrow(storage_key = "StorageKey::Owner", id = "u64", state = "String")]
-        #[near_bindgen]
-        pub struct Integration {
-            pub value: u32,
-        }
+    #[derive(BorshSerialize, BorshDeserialize, Owner, Pause, Rbac, Escrow)]
+    #[borsh(crate = "near_sdk::borsh")]
+    #[owner(storage_key = "StorageKey::Owner")]
+    #[pause(storage_key = "StorageKey::Pause")]
+    #[rbac(storage_key = "StorageKey::Rbac", roles = "Role")]
+    #[escrow(storage_key = "StorageKey::Owner", id = "u64", state = "String")]
+    #[near_bindgen]
+    pub struct Integration {
+        pub value: u32,
     }
 
     #[near_bindgen]
@@ -130,17 +130,17 @@ mod integration {
 }
 use integration::Integration;
 
-compat_derive_borsh! {
-    #[derive(Migrate, Owner, Pause, Rbac)]
-    #[migrate(from = "Integration")]
-    #[owner(storage_key = "StorageKey::Owner")]
-    #[pause(storage_key = "StorageKey::Pause")]
-    #[rbac(storage_key = "StorageKey::Rbac", roles = "Role")]
-    #[near_bindgen]
-    struct MigrateIntegration {
-        pub new_value: String,
-        pub moved_value: u32,
-    }
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
+#[derive(Migrate, Owner, Pause, Rbac)]
+#[migrate(from = "Integration")]
+#[owner(storage_key = "StorageKey::Owner")]
+#[pause(storage_key = "StorageKey::Pause")]
+#[rbac(storage_key = "StorageKey::Rbac", roles = "Role")]
+#[near_bindgen]
+struct MigrateIntegration {
+    pub new_value: String,
+    pub moved_value: u32,
 }
 
 impl MigrateHook for MigrateIntegration {
@@ -394,23 +394,22 @@ fn integration_fail_cannot_lock_twice() {
 
 #[cfg(test)]
 mod pausable_fungible_token {
-    compat_use_borsh!();
+    use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
     use near_sdk::{env, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId};
     use near_sdk_contract_tools::{
-        compat_derive_borsh, compat_use_borsh,
         ft::*,
         hook::Hook,
         pause::{hooks::PausableHook, Pause},
         Pause, COMPAT_ONE_NEAR, COMPAT_ONE_YOCTONEAR,
     };
 
-    compat_derive_borsh! {
-        #[derive(FungibleToken, Pause)]
-        #[fungible_token(all_hooks = "PausableHook", transfer_hook = "TransferHook")]
-        #[near_bindgen]
-        struct Contract {
-            pub storage_usage: u64,
-        }
+    #[derive(BorshSerialize, BorshDeserialize)]
+    #[borsh(crate = "near_sdk::borsh")]
+    #[derive(FungibleToken, Pause)]
+    #[fungible_token(all_hooks = "PausableHook", transfer_hook = "TransferHook")]
+    #[near_bindgen]
+    struct Contract {
+        pub storage_usage: u64,
     }
 
     #[near_bindgen]
@@ -506,24 +505,24 @@ mod pausable_fungible_token {
 
 #[cfg(test)]
 mod owned_fungible_token {
-    compat_use_borsh!();
+    use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
     use near_sdk::{
         env, json_types::U128, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId,
         PanicOnDefault,
     };
     use near_sdk_contract_tools::{
-        compat_derive_borsh, compat_near_to_u128, compat_use_borsh,
+        compat_near_to_u128,
         ft::*,
         owner::{hooks::OnlyOwner, *},
         Owner, COMPAT_ONE_NEAR, COMPAT_ONE_YOCTONEAR,
     };
 
-    compat_derive_borsh! {
-        #[derive(PanicOnDefault, Owner, FungibleToken)]
-        #[fungible_token(all_hooks = "OnlyOwner")] // only the owner can transfer, etc. the tokens
-        #[near_bindgen]
-        pub struct Contract {}
-    }
+    #[derive(BorshSerialize, BorshDeserialize)]
+    #[borsh(crate = "near_sdk::borsh")]
+    #[derive(PanicOnDefault, Owner, FungibleToken)]
+    #[fungible_token(all_hooks = "OnlyOwner")] // only the owner can transfer, etc. the tokens
+    #[near_bindgen]
+    pub struct Contract {}
 
     #[near_bindgen]
     impl Contract {

@@ -4,21 +4,21 @@
 //! writes to contract storage. This reduces transaction IO  and saves on gas.
 use std::marker::PhantomData;
 
-compat_use_borsh!();
-use near_sdk::{env, IntoStorageKey};
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    env, IntoStorageKey,
+};
 
 use crate::utils::prefix_key;
 
-compat_derive_borsh! {
-    /// A storage slot, composed of a storage location (key) and a data type
-    #[derive(Clone, Debug)]
-    pub struct Slot<T> {
-        /// The storage key this slot controls
-        pub key: Vec<u8>,
-        #[cfg_attr(feature = "near-sdk-4", borsh_skip)]
-        #[cfg_attr(feature = "near-sdk-5", borsh(skip))]
-        _marker: PhantomData<T>,
-    }
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug)]
+#[borsh(crate = "near_sdk::borsh")]
+/// A storage slot, composed of a storage location (key) and a data type
+pub struct Slot<T> {
+    /// The storage key this slot controls
+    pub key: Vec<u8>,
+    #[borsh(skip)]
+    _marker: PhantomData<T>,
 }
 
 impl Slot<()> {
@@ -97,7 +97,7 @@ impl<T> Slot<T> {
 impl<T: BorshSerialize> Slot<T> {
     /// Writes a value to the managed storage slot
     pub fn write(&mut self, value: &T) -> bool {
-        self.write_raw(&compat_borsh_serialize!(&value).unwrap())
+        self.write_raw(&{ borsh::to_vec((&value)) }.unwrap())
     }
 
     /// If the given value is `Some(T)`, writes `T` to storage. Otherwise,
@@ -130,7 +130,7 @@ impl<T: BorshDeserialize> Slot<T> {
 impl<T: BorshSerialize + BorshDeserialize> Slot<T> {
     /// Writes a value to storage and returns the evicted value, if present.
     pub fn swap(&mut self, value: &T) -> Option<T> {
-        let v = compat_borsh_serialize!(&value).unwrap();
+        let v = borsh::to_vec(&value).unwrap();
 
         if self.write_raw(&v) {
             // unwrap should be safe because write_raw returned true

@@ -1,21 +1,20 @@
-compat_use_borsh!();
+use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{
     collections::Vector, env, json_types::U128, log, near_bindgen, test_utils::VMContextBuilder,
     testing_env, AccountId, PromiseOrValue,
 };
 use near_sdk_contract_tools::{
-    compat_borsh_serialize, compat_derive_borsh, compat_use_borsh, compat_yoctonear, hook::Hook,
-    standard::nep141::*, Nep141,
+    compat_borsh_serialize, compat_yoctonear, hook::Hook, standard::nep141::*, Nep141,
 };
 
-compat_derive_borsh! {
-    #[derive(Nep141)]
-    #[nep141(transfer_hook = "TransferHook")]
-    #[near_bindgen]
-    struct FungibleToken {
-        pub transfers: Vector<Vec<u8>>,
-        pub hooks: Vector<String>,
-    }
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
+#[derive(Nep141)]
+#[nep141(transfer_hook = "TransferHook")]
+#[near_bindgen]
+struct FungibleToken {
+    pub transfers: Vector<Vec<u8>>,
+    pub hooks: Vector<String>,
 }
 
 #[derive(Default)]

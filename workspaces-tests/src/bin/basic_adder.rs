@@ -5,11 +5,11 @@ workspaces_tests::predicate!();
 use near_sdk::{near_bindgen, PanicOnDefault};
 use near_sdk_contract_tools::compat_derive_borsh;
 
-compat_derive_borsh! {
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
     #[derive(PanicOnDefault)]
     #[near_bindgen]
     pub struct Contract {}
-}
 
 #[near_bindgen]
 impl Contract {

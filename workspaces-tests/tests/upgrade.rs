@@ -1,8 +1,4 @@
-workspaces_tests::near_sdk!();
-compat_use_borsh!(BorshSerialize);
-
-use near_sdk::serde::Serialize;
-use near_sdk_contract_tools::{compat_borsh_serialize, compat_derive_borsh, compat_use_borsh};
+use near_sdk::{borsh::BorshSerialize, serde::Serialize};
 use near_workspaces::{Account, Contract};
 use pretty_assertions::assert_eq;
 
@@ -24,10 +20,10 @@ const BAD_WASM: &[u8] =
 const RANDOM_WASM: &[u8] =
     include_bytes!("../../target/wasm32-unknown-unknown/release/counter_multisig.wasm");
 
-compat_derive_borsh! {[BorshSerialize],
-    struct ArgsBorsh {
-        pub code: Vec<u8>,
-    }
+#[derive(BorshSerialize)]
+#[borsh(crate = "near_sdk::borsh")]
+struct ArgsBorsh {
+    pub code: Vec<u8>,
 }
 
 #[derive(Serialize)]

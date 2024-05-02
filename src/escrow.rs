@@ -12,17 +12,22 @@
 //! You can change the key this is stored under by providing [storage_key] to the macro.
 use crate::{event, standard::nep297::Event};
 use crate::{slot::Slot, DefaultStorageKey};
-compat_use_borsh!();
-use near_sdk::{env::panic_str, require, serde::Serialize, BorshStorageKey};
+use near_sdk::{
+    borsh::{BorshDeserialize, BorshSerialize},
+    env::panic_str,
+    require,
+    serde::Serialize,
+    BorshStorageKey,
+};
 
 const ESCROW_ALREADY_LOCKED_MESSAGE: &str = "Already locked";
 const ESCROW_NOT_LOCKED_MESSAGE: &str = "Lock required";
 const ESCROW_UNLOCK_HANDLER_FAILED_MESSAGE: &str = "Unlock handler failed";
 
-compat_derive_storage_key! {
-    enum StorageKey<'a, T> {
-        Locked(&'a T),
-    }
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
+enum StorageKey<'a, T> {
+    Locked(&'a T),
 }
 
 /// Emit the state of an escrow lock and whether it was locked or unlocked
@@ -160,7 +165,9 @@ where
 mod tests {
     use super::Escrow;
     use crate::escrow::EscrowInternal;
-    use near_sdk::{near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId, VMContext};
+    use near_sdk::{
+        near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId, NearToken, VMContext,
+    };
     use near_sdk_contract_tools_macros::Escrow;
 
     const ID: u64 = 1;
@@ -188,7 +195,7 @@ mod tests {
         VMContextBuilder::new()
             .signer_account_id(signer.clone().unwrap_or_else(alice))
             .predecessor_account_id(signer.unwrap_or_else(alice))
-            .attached_deposit(compat_yoctonear!(attached_deposit))
+            .attached_deposit(NearToken::from_yoctonear(attached_deposit))
             .is_view(false)
             .build()
     }

@@ -1,15 +1,13 @@
 #![allow(missing_docs)]
 
 workspaces_tests::near_sdk!();
-compat_use_borsh!();
+use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{
     env, near_bindgen,
     serde::{Deserialize, Serialize},
     AccountId, PanicOnDefault,
 };
-use near_sdk_contract_tools::{
-    compat_derive_serde_borsh, compat_use_borsh, escrow::Escrow, Escrow,
-};
+use near_sdk_contract_tools::{compat_derive_serde_borsh, escrow::Escrow, Escrow};
 
 pub fn main() {} // Ignore
 

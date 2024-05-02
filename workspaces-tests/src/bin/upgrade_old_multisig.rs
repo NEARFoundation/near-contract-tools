@@ -41,7 +41,8 @@ impl approval::Action<Contract> for ContractAction {
     }
 }
 
-compat_derive_borsh! {
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
     #[derive(
         PanicOnDefault,
         Owner,
@@ -58,7 +59,6 @@ compat_derive_borsh! {
     pub struct Contract {
         pub foo: u32,
     }
-}
 
 #[near_bindgen]
 impl Contract {

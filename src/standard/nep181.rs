@@ -55,11 +55,11 @@ impl<C: Nep171Controller + Nep181Controller> Hook<C, action::Nep171Burn<'_>> for
     }
 }
 
-compat_derive_storage_key! {
-    enum StorageKey<'a> {
-        Tokens,
-        OwnerTokens(&'a AccountId),
-    }
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
+enum StorageKey<'a> {
+    Tokens,
+    OwnerTokens(&'a AccountId),
 }
 
 /// Internal functions for [`Nep181Controller`].

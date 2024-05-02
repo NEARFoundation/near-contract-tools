@@ -1,7 +1,6 @@
-compat_use_borsh!();
+use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{env, near_bindgen, PanicOnDefault};
 use near_sdk_contract_tools::{
-    compat_derive_borsh, compat_use_borsh,
     hook::Hook,
     owner::Owner,
     pause::Pause,
@@ -13,21 +12,19 @@ use near_sdk_contract_tools::{
     Nep171, Nep177, Nep178, Nep181, Owner, Pause,
 };
 
-compat_derive_borsh! {
-    #[derive(
-        PanicOnDefault, Nep171, Nep177, Nep178, Nep181, Pause, Owner,
-    )]
-    #[nep171(
-        all_hooks = "(nep178::TokenApprovals, nep181::TokenEnumeration)",
-        transfer_hook = "Self",
-        check_external_transfer = "nep178::TokenApprovals",
-        token_data = "(nep177::TokenMetadata, nep178::TokenApprovals)"
-    )]
-    #[nep178()]
-    #[near_bindgen]
-    pub struct Contract {
-        next_token_id: u32,
-    }
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
+#[derive(PanicOnDefault, Nep171, Nep177, Nep178, Nep181, Pause, Owner)]
+#[nep171(
+    all_hooks = "(nep178::TokenApprovals, nep181::TokenEnumeration)",
+    transfer_hook = "Self",
+    check_external_transfer = "nep178::TokenApprovals",
+    token_data = "(nep177::TokenMetadata, nep178::TokenApprovals)"
+)]
+#[nep178()]
+#[near_bindgen]
+pub struct Contract {
+    next_token_id: u32,
 }
 
 impl Hook<Contract, action::Nep171Transfer<'_>> for Contract {

@@ -24,12 +24,12 @@ compat_derive_storage_key! {
     }
 }
 
-compat_derive_borsh! {
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
     enum MyAction {
         SayHello,
         SayGoodbye,
     }
-}
 
 impl approval::Action<Contract> for MyAction {
     type Output = &'static str;
@@ -49,12 +49,12 @@ compat_derive_storage_key! {
     }
 }
 
-compat_derive_borsh! {
+#[derive(BorshSerialize, BorshDeserialize)]
+#[borsh(crate = "near_sdk::borsh")]
     #[derive(PanicOnDefault, Rbac)]
     #[rbac(roles = "Role")]
     #[near_bindgen]
     pub struct Contract {}
-}
 
 // This single function implementation completely implements simple multisig on
 // the contract
