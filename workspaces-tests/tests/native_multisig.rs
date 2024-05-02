@@ -239,7 +239,7 @@ async fn create_account_transfer_deploy_contract_function_call() {
             "receiver_id": new_account_id_str.clone(),
             "actions": [
                 PromiseAction::CreateAccount,
-                PromiseAction::Transfer { amount: NearToken::from_near(1).saturating_div(30).as_yoctonear().into() },
+                PromiseAction::Transfer { amount: NearToken::from_near(30).as_yoctonear().into() },
                 PromiseAction::DeployContract { code: BASIC_ADDER_WASM.to_vec().into() },
                 PromiseAction::FunctionCall { function_name: "new".into(), arguments: vec![].into(), amount: 0.into(), gas: 1_000_000_000_000.into() }
             ],
