@@ -1,5 +1,3 @@
-workspaces_tests::near_sdk!();
-
 use near_sdk::{json_types::Base64VecU8, serde_json::json};
 use near_workspaces::{Account, Contract};
 use pretty_assertions::assert_eq;

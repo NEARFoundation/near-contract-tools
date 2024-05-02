@@ -1,18 +1,16 @@
 #![allow(missing_docs)]
 
-// Ignore
-pub fn main() {}
+workspaces_tests::predicate!();
 
-workspaces_tests::near_sdk!();
-use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{
+    borsh::{BorshDeserialize, BorshSerialize},
     env,
     json_types::{Base64VecU8, U128},
     near_bindgen,
     store::Vector,
     PanicOnDefault,
 };
-use near_sdk_contract_tools::{compat_derive_borsh, compat_near_to_u128, ft::*};
+use near_sdk_contract_tools::{compat_near_to_u128, ft::*};
 
 #[derive(BorshSerialize, BorshDeserialize)]
 #[borsh(crate = "near_sdk::borsh")]

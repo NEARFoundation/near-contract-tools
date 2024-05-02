@@ -4,8 +4,6 @@
 //! implementing [`Hook`]s for the NEP-171 component.
 
 use super::*;
-#[cfg(feature = "near-sdk-4")]
-use near_sdk::borsh;
 use near_sdk::{borsh::BorshSerialize, serde::Serialize};
 
 /// NEP-171 mint action.

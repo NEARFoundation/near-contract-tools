@@ -44,11 +44,11 @@ mod implicit_key {
 }
 use implicit_key::OwnedStructImplicitKey;
 
-compat_derive_storage_key! {
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
     enum StorageKey {
         MyStorageKey,
     }
-}
 
 #[derive(Owner)]
 #[owner(storage_key = "StorageKey::MyStorageKey")]

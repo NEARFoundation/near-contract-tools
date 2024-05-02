@@ -2,17 +2,18 @@
 
 workspaces_tests::predicate!();
 
-use near_sdk::{env, near_bindgen, PanicOnDefault};
-use near_sdk_contract_tools::{compat_derive_borsh, owner::*, Owner, Upgrade};
+use near_sdk::{
+    borsh::{BorshSerialize, BorshDeserialize},
+    env, near_bindgen, PanicOnDefault};
+use near_sdk_contract_tools::{owner::*, Owner, Upgrade};
 
-#[derive(BorshSerialize, BorshDeserialize)]
+#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, Owner, Upgrade)]
 #[borsh(crate = "near_sdk::borsh")]
-    #[derive(PanicOnDefault, Owner, Upgrade)]
-    #[upgrade(serializer = "jsonbase64", hook = "owner")]
-    #[near_bindgen]
-    pub struct ContractOld {
-        pub foo: u32,
-    }
+#[upgrade(serializer = "jsonbase64", hook = "owner")]
+#[near_bindgen]
+pub struct ContractOld {
+    pub foo: u32,
+}
 
 #[near_bindgen]
 impl ContractOld {

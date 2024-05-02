@@ -1,5 +1,3 @@
-workspaces_tests::near_sdk!();
-
 use std::collections::HashMap;
 
 use near_sdk::{json_types::U128, serde_json::json};

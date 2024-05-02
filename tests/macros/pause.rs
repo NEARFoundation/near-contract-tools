@@ -5,11 +5,11 @@ use near_sdk_contract_tools::{
     Pause,
 };
 
-compat_derive_storage_key! {
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
     enum StorageKey {
         Pause,
     }
-}
 
 mod implicit_key {
     use super::*;

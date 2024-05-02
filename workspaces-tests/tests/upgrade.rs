@@ -101,7 +101,7 @@ async fn perform_upgrade_test(wasm: &[u8], args: Vec<u8>) {
 async fn upgrade_borsh() {
     perform_upgrade_test(
         WASM_BORSH,
-        compat_borsh_serialize!(&ArgsBorsh {
+        near_sdk::borsh::to_vec(&ArgsBorsh {
             code: NEW_WASM.to_vec(),
         })
         .unwrap(),
@@ -189,7 +189,7 @@ async fn fail_owner(wasm: &[u8], args: Vec<u8>) {
 async fn upgrade_failure_not_owner_borsh() {
     fail_owner(
         WASM_BORSH,
-        compat_borsh_serialize!(&ArgsBorsh {
+        near_sdk::borsh::to_vec(&ArgsBorsh {
             code: NEW_WASM.to_vec(),
         })
         .unwrap(),

@@ -1,5 +1,3 @@
-workspaces_tests::near_sdk!();
-
 use std::{future::IntoFuture, time::Duration};
 
 use near_crypto::{KeyType, SecretKey};

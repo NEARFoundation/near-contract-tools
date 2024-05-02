@@ -1,16 +1,13 @@
 #![allow(missing_docs)]
 
-// Ignore
-pub fn main() {}
+workspaces_tests::predicate!();
 
-workspaces_tests::near_sdk!();
 use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{env, log, near_bindgen, PanicOnDefault};
-use near_sdk_contract_tools::{compat_derive_borsh, hook::Hook, nft::*};
+use near_sdk_contract_tools::{hook::Hook, nft::*};
 
-#[derive(BorshSerialize, BorshDeserialize)]
+#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, NonFungibleToken)]
 #[borsh(crate = "near_sdk::borsh")]
-#[derive(PanicOnDefault, NonFungibleToken)]
 #[near_bindgen]
 pub struct Contract {}
 

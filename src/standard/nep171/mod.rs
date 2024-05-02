@@ -39,8 +39,6 @@
 
 use std::error::Error;
 
-#[cfg(feature = "near-sdk-4")]
-use near_sdk::borsh;
 use near_sdk::{
     borsh::BorshSerialize,
     serde::{Deserialize, Serialize},

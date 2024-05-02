@@ -2,17 +2,20 @@
 
 workspaces_tests::predicate!();
 
-use near_sdk::{env, log, near_bindgen, AccountId, PanicOnDefault, PromiseOrValue};
+use near_sdk::{
+    borsh::{BorshDeserialize, BorshSerialize},
+    env, log, near_bindgen, AccountId, PanicOnDefault, PromiseOrValue,
+};
 use near_sdk_contract_tools::{
-    compat_derive_borsh, compat_yoctonear,
+    compat_yoctonear,
     standard::nep171::{ext_nep171, *},
 };
 
 #[derive(BorshSerialize, BorshDeserialize)]
 #[borsh(crate = "near_sdk::borsh")]
-    #[derive(PanicOnDefault)]
-    #[near_bindgen]
-    pub struct Contract {}
+#[derive(PanicOnDefault)]
+#[near_bindgen]
+pub struct Contract {}
 
 #[near_bindgen]
 impl Nep171Receiver for Contract {

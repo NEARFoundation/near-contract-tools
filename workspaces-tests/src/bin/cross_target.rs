@@ -1,6 +1,7 @@
 #![allow(missing_docs)]
 
-predicate!();
+workspaces_tests::predicate!();
+
 use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{env, near_bindgen, require, AccountId, PanicOnDefault};
 

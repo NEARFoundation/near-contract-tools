@@ -1,5 +1,7 @@
 #![allow(missing_docs)]
 
+workspaces_tests::predicate!();
+
 use near_sdk::{
     borsh::{BorshDeserialize, BorshSerialize},
     env, near_bindgen,
@@ -8,18 +10,17 @@ use near_sdk::{
 };
 use near_sdk_contract_tools::{
     approval::{simple_multisig::Configuration, *},
-    compat_derive_serde_borsh, compat_derive_storage_key,
+    compat_derive_serde_borsh,
     rbac::Rbac,
     Rbac, SimpleMultisig,
 };
 use std::string::ToString;
 use strum_macros::Display;
 
-compat_derive_storage_key! {
-    #[derive(Clone, Debug, Display)]
-    pub enum Role {
-        Member,
-    }
+#[derive(BorshSerialize, BorshStorageKey, Clone, Debug, Display)]
+#[borsh(crate = "near_sdk::borsh")]
+pub enum Role {
+    Member,
 }
 
 compat_derive_serde_borsh! {[Serialize, BorshSerialize, BorshDeserialize],
@@ -124,5 +125,3 @@ impl Contract {
         self.counter
     }
 }
-
-pub fn main() {} // Ignore

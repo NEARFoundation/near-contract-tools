@@ -1,5 +1,3 @@
-workspaces_tests::near_sdk!();
-
 use near_sdk::{json_types::U128, serde_json::json};
 use near_sdk_contract_tools::{compat_near_to_u128, COMPAT_ONE_NEAR};
 use near_workspaces::{sandbox, types::NearToken, Account, Contract, DevNetwork, Worker};

@@ -3,8 +3,6 @@
 //! Reference: <https://github.com/near/NEPs/blob/master/neps/nep-0177.md>
 use std::error::Error;
 
-#[cfg(feature = "near-sdk-4")]
-use near_sdk::borsh;
 use near_sdk::{
     borsh::{BorshDeserialize, BorshSerialize},
     env,

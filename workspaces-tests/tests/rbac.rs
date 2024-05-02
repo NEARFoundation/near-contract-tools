@@ -1,5 +1,3 @@
-workspaces_tests::near_sdk!();
-
 use std::collections::HashSet;
 
 use near_sdk::{

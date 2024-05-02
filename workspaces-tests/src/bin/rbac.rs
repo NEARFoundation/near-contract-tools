@@ -4,19 +4,22 @@ workspaces_tests::predicate!();
 
 use std::str::FromStr;
 
-use near_sdk_contract_tools::{
-    compat_derive_serde_borsh, compat_derive_storage_key, rbac::Rbac, Rbac,
+use near_sdk_contract_tools::{compat_derive_serde_borsh, rbac::Rbac, Rbac};
+
+use near_sdk::{
+    borsh::{BorshDeserialize, BorshSerialize},
+    env, near_bindgen,
+    serde::Serialize,
+    AccountId, BorshStorageKey, PanicOnDefault,
 };
 
-use near_sdk::{env, near_bindgen, serde::Serialize, AccountId, BorshStorageKey, PanicOnDefault};
-
-compat_derive_storage_key! {
-    pub enum Role {
-        Alpha,
-        Beta,
-        Gamma,
-        Delta,
-    }
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
+pub enum Role {
+    Alpha,
+    Beta,
+    Gamma,
+    Delta,
 }
 
 impl FromStr for Role {

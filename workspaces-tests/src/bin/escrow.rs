@@ -1,6 +1,7 @@
 #![allow(missing_docs)]
 
-workspaces_tests::near_sdk!();
+workspaces_tests::predicate!();
+
 use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{
     env, near_bindgen,
@@ -8,8 +9,6 @@ use near_sdk::{
     AccountId, PanicOnDefault,
 };
 use near_sdk_contract_tools::{compat_derive_serde_borsh, escrow::Escrow, Escrow};
-
-pub fn main() {} // Ignore
 
 compat_derive_serde_borsh! {
     #[derive(Clone)]

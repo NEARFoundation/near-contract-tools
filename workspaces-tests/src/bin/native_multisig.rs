@@ -1,9 +1,7 @@
 #![allow(missing_docs)]
 
-// Ignore
-pub fn main() {}
+workspaces_tests::predicate!();
 
-workspaces_tests::near_sdk!();
 use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault, Promise};
 use near_sdk_contract_tools::{
@@ -12,21 +10,18 @@ use near_sdk_contract_tools::{
         simple_multisig::{ApprovalState, Configuration},
         ApprovalManager,
     },
-    compat_derive_borsh, compat_derive_storage_key,
     rbac::Rbac,
     Rbac, SimpleMultisig,
 };
 
-compat_derive_storage_key! {
-    #[derive(Clone, Debug)]
-    pub enum Role {
-        Multisig,
-    }
+#[derive(BorshSerialize, BorshStorageKey, Clone, Debug)]
+#[borsh(crate = "near_sdk::borsh")]
+pub enum Role {
+    Multisig,
 }
 
-#[derive(BorshSerialize, BorshDeserialize)]
+#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, Rbac, SimpleMultisig)]
 #[borsh(crate = "near_sdk::borsh")]
-#[derive(PanicOnDefault, Rbac, SimpleMultisig)]
 #[simple_multisig(action = "NativeTransactionAction", role = "Role::Multisig")]
 #[rbac(roles = "Role")]
 #[near_bindgen]

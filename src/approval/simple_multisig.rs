@@ -34,8 +34,7 @@ pub struct Configuration<Au: AccountAuthorizer> {
     /// approval-eligible member after this period has elapsed.
     /// 0 = perpetual validity, no deletion
     pub validity_period_nanoseconds: u64,
-    #[cfg_attr(feature = "near-sdk-4", borsh_skip)]
-    #[cfg_attr(feature = "near-sdk-5", borsh(skip))]
+    #[borsh(skip)]
     #[serde(skip)]
     _authorizer: PhantomData<Au>,
 }

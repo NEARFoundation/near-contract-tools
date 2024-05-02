@@ -1,18 +1,24 @@
 #![allow(missing_docs)]
 
 workspaces_tests::predicate!();
-use near_sdk::{env, json_types::U128, near_bindgen, store::Vector, PanicOnDefault, Promise};
-use near_sdk_contract_tools::{
-    compat_derive_borsh, compat_near_to_u128, utils::apply_storage_fee_and_refund,
+
+use near_sdk::{
+    borsh::{BorshDeserialize, BorshSerialize},
+    env,
+    json_types::U128,
+    near_bindgen,
+    store::Vector,
+    PanicOnDefault, Promise,
 };
+use near_sdk_contract_tools::{compat_near_to_u128, utils::apply_storage_fee_and_refund};
 
 #[derive(BorshSerialize, BorshDeserialize)]
 #[borsh(crate = "near_sdk::borsh")]
-    #[derive(PanicOnDefault)]
-    #[near_bindgen]
-    pub struct ContractBad {
-        pub items: Vector<String>,
-    }
+#[derive(PanicOnDefault)]
+#[near_bindgen]
+pub struct ContractBad {
+    pub items: Vector<String>,
+}
 
 #[near_bindgen]
 impl ContractBad {

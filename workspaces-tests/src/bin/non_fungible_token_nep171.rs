@@ -1,28 +1,31 @@
 #![allow(missing_docs)]
 
 workspaces_tests::predicate!();
-use near_sdk::{env, log, near_bindgen, PanicOnDefault};
-use near_sdk_contract_tools::{compat_derive_borsh, hook::Hook, standard::nep171::*, Nep171};
 
-#[derive(BorshSerialize, BorshDeserialize)]
+use near_sdk::{
+    borsh::{BorshDeserialize, BorshSerialize},
+    env, log, near_bindgen, PanicOnDefault,
+};
+use near_sdk_contract_tools::{hook::Hook, standard::nep171::*, Nep171};
+
+#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, Nep171)]
 #[borsh(crate = "near_sdk::borsh")]
-    #[derive(PanicOnDefault, Nep171)]
-    #[nep171(transfer_hook = "Self")]
-    #[near_bindgen]
-    pub struct Contract {}
+#[nep171(transfer_hook = "Self")]
+#[near_bindgen]
+pub struct Contract {}
 
-    impl Hook<Contract, action::Nep171Transfer<'_>> for Contract {
-        fn hook<R>(
-            contract: &mut Contract,
-            args: &action::Nep171Transfer<'_>,
-            f: impl FnOnce(&mut Contract) -> R,
-        ) -> R {
-            log!("before_nft_transfer({})", args.token_id);
-            let r = f(contract);
-            log!("after_nft_transfer({})", args.token_id);
-            r
-        }
+impl Hook<Contract, action::Nep171Transfer<'_>> for Contract {
+    fn hook<R>(
+        contract: &mut Contract,
+        args: &action::Nep171Transfer<'_>,
+        f: impl FnOnce(&mut Contract) -> R,
+    ) -> R {
+        log!("before_nft_transfer({})", args.token_id);
+        let r = f(contract);
+        log!("after_nft_transfer({})", args.token_id);
+        r
     }
+}
 
 #[near_bindgen]
 impl Contract {

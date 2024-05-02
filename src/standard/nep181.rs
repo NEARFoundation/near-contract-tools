@@ -3,8 +3,6 @@
 //! Reference: <https://github.com/near/NEPs/blob/master/neps/nep-0181.md>
 use std::borrow::Cow;
 
-#[cfg(feature = "near-sdk-4")]
-use near_sdk::borsh;
 use near_sdk::{borsh::BorshSerialize, collections::UnorderedSet, env, AccountId, BorshStorageKey};
 
 use crate::{hook::Hook, slot::Slot, standard::nep171::*, DefaultStorageKey};

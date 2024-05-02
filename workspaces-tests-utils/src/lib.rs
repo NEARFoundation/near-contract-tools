@@ -1,11 +1,5 @@
 #![allow(missing_docs)]
 
-#[cfg(feature = "near-sdk-4")]
-extern crate near_sdk_4 as near_sdk;
-
-#[cfg(feature = "near-sdk-5")]
-extern crate near_sdk_5 as near_sdk;
-
 use near_sdk::{json_types::U128, serde::de::DeserializeOwned, serde_json::json};
 use near_workspaces::{
     result::ExecutionFinalResult, types::NearToken, Account, AccountId, Contract,
