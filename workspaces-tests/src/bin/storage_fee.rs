@@ -5,10 +5,9 @@ workspaces_tests::predicate!();
 use near_sdk::{
     borsh::{BorshDeserialize, BorshSerialize},
     env,
-    json_types::U128,
     near_bindgen,
     store::Vector,
-    PanicOnDefault, Promise,
+    NearToken, PanicOnDefault, Promise,
 };
 use near_sdk_contract_tools::utils::apply_storage_fee_and_refund;
 
@@ -29,8 +28,8 @@ impl ContractBad {
         }
     }
 
-    pub fn storage_byte_cost(&self) -> U128 {
-        env::storage_byte_cost().as_yoctonear().into()
+    pub fn storage_byte_cost(&self) -> NearToken {
+        env::storage_byte_cost()
     }
 
     #[payable]

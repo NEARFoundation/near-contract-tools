@@ -1,4 +1,4 @@
-use near_sdk::{json_types::U128, serde_json::json};
+use near_sdk::serde_json::json;
 use near_workspaces::{sandbox, types::NearToken, Account, Contract, DevNetwork, Worker};
 use workspaces_tests_utils::ONE_NEAR;
 
@@ -43,16 +43,15 @@ async fn storage_fee() {
         .view("storage_byte_cost")
         .await
         .unwrap()
-        .json::<U128>()
-        .unwrap()
-        .0;
+        .json::<NearToken>()
+        .unwrap();
 
     let num_bytes = NearToken::from_near(1)
-        .saturating_div(byte_cost)
-        .as_yoctonear();
+        .as_yoctonear()
+        .saturating_div(byte_cost.as_yoctonear());
     let payload = "0".repeat(usize::try_from(num_bytes).unwrap());
     // This is the absolute minimum this payload should require to store (uncompressed)
-    let minimum_storage_fee = NearToken::from_yoctonear(num_bytes * byte_cost);
+    let minimum_storage_fee = byte_cost.saturating_mul(num_bytes);
     let gas_price = worker.gas_price().await.unwrap();
 
     let go = || async {
@@ -78,10 +77,9 @@ async fn storage_fee() {
             .saturating_sub(gas_price.saturating_mul(r.total_gas_burnt.as_gas() as u128));
 
         assert!(net_fee >= minimum_storage_fee);
-        assert!(
-            net_fee.saturating_sub(minimum_storage_fee)
-                < NearToken::from_yoctonear(byte_cost * 100)
-        ); // Sanity/validity check / allow up to 100 bytes worth of additional storage to be charged
+
+        // Sanity/validity check / allow up to 100 bytes worth of additional storage to be charged
+        assert!(net_fee.saturating_sub(minimum_storage_fee) < byte_cost.saturating_mul(100));
     };
 
     for _ in 0..5 {
