@@ -126,7 +126,7 @@ async fn stake() {
         "Account should start with no staked tokens"
     );
 
-    let stake_amount = MINIMUM_STAKE.saturating_mul(2);
+    let amount = MINIMUM_STAKE.saturating_mul(2);
 
     let request_id = alice
         .call(contract.id(), "request")
@@ -134,7 +134,7 @@ async fn stake() {
             "receiver_id": contract.id(),
             "actions": [
                 PromiseAction::Stake {
-                    amount: stake_amount.as_yoctonear().into(),
+                    amount,
                     public_key: public_key.to_string(),
                 },
             ],
@@ -151,7 +151,7 @@ async fn stake() {
     let contract_after = contract.view_account().await.unwrap();
 
     assert_eq!(
-        contract_after.locked, stake_amount,
+        contract_after.locked, amount,
         "Locked amount should be equal to the amount staked"
     );
 }
@@ -239,9 +239,14 @@ async fn create_account_transfer_deploy_contract_function_call() {
             "receiver_id": new_account_id_str.clone(),
             "actions": [
                 PromiseAction::CreateAccount,
-                PromiseAction::Transfer { amount: NearToken::from_near(30).as_yoctonear().into() },
+                PromiseAction::Transfer { amount: NearToken::from_near(30) },
                 PromiseAction::DeployContract { code: BASIC_ADDER_WASM.to_vec().into() },
-                PromiseAction::FunctionCall { function_name: "new".into(), arguments: vec![].into(), amount: 0.into(), gas: 1_000_000_000_000.into() }
+                PromiseAction::FunctionCall {
+                    function_name: "new".into(),
+                    arguments: vec![].into(),
+                    amount: NearToken::from_yoctonear(0),
+                    gas: Gas::from_tgas(1),
+                }
             ],
         }))
         .max_gas()
@@ -382,12 +387,12 @@ async fn add_both_access_key_kinds_and_delete() {
                 .iter()
                 .any(|a| near_sdk::serde_json::to_string(&a.public_key).unwrap()
                     == new_key_json_string),
-            "New key does not exist in access keys before being added"
+            "New key does not exist in access keys before being added",
         );
 
         execute_actions(vec![PromiseAction::AddAccessKey {
             public_key: new_public_key_string.clone(),
-            allowance: (1234567890).into(),
+            allowance: NearToken::from_yoctonear(1234567890),
             receiver_id: alice.id().as_str().parse().unwrap(),
             function_names: vec!["one".into(), "two".into(), "three".into()],
             nonce: None,
@@ -482,7 +487,7 @@ async fn transfer() {
             "receiver_id": charlie.id(),
             "actions": [
                 PromiseAction::Transfer {
-                    amount: NearToken::from_near(10).as_yoctonear().into(),
+                    amount: NearToken::from_near(10),
                 },
             ],
         }))
@@ -569,8 +574,8 @@ async fn reflexive_xcc() {
             .as_bytes()
             .to_vec()
             .into(),
-        amount: 0.into(),
-        gas: Gas::from_tgas(50).as_gas().into(),
+        amount: NearToken::from_yoctonear(0),
+        gas: Gas::from_tgas(50),
     }];
 
     let request_id = alice
@@ -641,8 +646,8 @@ async fn external_xcc() {
             .as_bytes()
             .to_vec()
             .into(),
-        amount: 0.into(),
-        gas: Gas::from_tgas(50).as_gas().into(),
+        amount: NearToken::from_yoctonear(0),
+        gas: Gas::from_tgas(50),
     }];
 
     let request_id = alice

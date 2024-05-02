@@ -2,7 +2,7 @@
 #![allow(missing_docs)] // ext_contract doesn't play nice with #![warn(missing_docs)]
 
 use super::{StorageBalance, StorageBalanceBounds};
-use near_sdk::{ext_contract, json_types::U128, AccountId};
+use near_sdk::{ext_contract, AccountId, NearToken};
 
 /// NEAR uses storage staking which means that a contract account must have
 /// sufficient balance to cover all storage added over time. This standard
@@ -34,7 +34,7 @@ pub trait Nep145 {
     /// This method is safe to call, and does not remove data.
     ///
     /// Returns the updated storage balance record for the given account.
-    fn storage_withdraw(&mut self, amount: Option<U128>) -> StorageBalance;
+    fn storage_withdraw(&mut self, amount: Option<NearToken>) -> StorageBalance;
 
     /// Unregister the predecessor account and withdraw all available NEAR.
     ///

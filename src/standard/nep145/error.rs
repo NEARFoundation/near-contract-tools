@@ -1,22 +1,22 @@
 //! Error types for the NEP-145 standard.
 
-use near_sdk::{json_types::U128, AccountId};
+use near_sdk::{AccountId, NearToken};
 use thiserror::Error;
 
 /// Occurs when an account has insufficient storage balance to perform an operation.
 #[derive(Debug, Error)]
 #[error(
-    "Account {account_id} has insufficient balance: {} available, but attempted to lock {}", available.0, attempted_to_lock.0
+    "Account {account_id} has insufficient balance: {available} available, but attempted to use {attempted_to_use}"
 )]
 pub struct InsufficientBalanceError {
     /// The account that attempted to perform the operation.
     pub account_id: AccountId,
 
     /// The amount of storage balance available to the account.
-    pub available: U128,
+    pub available: NearToken,
 
-    /// The amount of storage balance the account attempted to lock.
-    pub attempted_to_lock: U128,
+    /// The amount of storage balance the account attempted to use.
+    pub attempted_to_use: NearToken,
 }
 
 /// Occurs when an account is not registered.
@@ -32,36 +32,36 @@ pub struct ExcessiveUnlockError(pub AccountId);
 /// Occurs when an account attempts to withdraw more tokens than the contract
 /// allows without unregistering.
 #[derive(Debug, Error)]
-#[error("Account {account_id} must cover the minimum balance {}", minimum_balance.0)]
+#[error("Account {account_id} must cover the minimum balance {minimum_balance}")]
 pub struct MinimumBalanceUnderrunError {
     /// The account that attempted to perform the operation.
     pub account_id: AccountId,
 
     /// The minimum balance required to remain registered.
-    pub minimum_balance: U128,
+    pub minimum_balance: NearToken,
 }
 
 /// Occurs when an account attempts to deposit more tokens than the contract
 /// allows.
 #[derive(Debug, Error)]
-#[error("Account {account_id} must not exceed the maximum balance {}", maximum_balance.0)]
+#[error("Account {account_id} must not exceed the maximum balance {maximum_balance}")]
 pub struct MaximumBalanceOverrunError {
     /// The account that attempted to perform the operation.
     pub account_id: AccountId,
 
     /// The maximum balance allowed.
-    pub maximum_balance: U128,
+    pub maximum_balance: NearToken,
 }
 
 /// Occurs when an account attempts to unregister with a locked balance.
 #[derive(Debug, Error)]
-#[error("Account {account_id} cannot unregister with locked balance {} > 0", locked_balance.0)]
+#[error("Account {account_id} cannot unregister with locked balance {locked_balance} > 0")]
 pub struct UnregisterWithLockedBalanceError {
     /// The account that attempted to perform the operation.
     pub account_id: AccountId,
 
     /// The amount of storage balance locked by the account.
-    pub locked_balance: U128,
+    pub locked_balance: NearToken,
 }
 
 /// Errors that can occur when locking storage balance.
@@ -103,9 +103,12 @@ pub enum StorageWithdrawError {
     /// The account is not registered.
     #[error(transparent)]
     AccountNotRegistered(#[from] AccountNotRegisteredError),
-    /// The withdrawal does not meet the minimum balance requirement.
+    /// The withdrawal does not keep the minimum balance requirement.
     #[error(transparent)]
     MinimumBalanceUnderrun(#[from] MinimumBalanceUnderrunError),
+    /// The withdrawal exceeds the available storage balance.
+    #[error(transparent)]
+    InsufficientBalance(#[from] InsufficientBalanceError),
 }
 
 /// Errors that can occur when unregistering storage balance.

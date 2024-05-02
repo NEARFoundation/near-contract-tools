@@ -561,10 +561,10 @@ mod owned_fungible_token {
 
         // internal method calls
         contract
-            .deposit_to_storage_account(&alice, NearToken::from_near(1).as_yoctonear().into())
+            .deposit_to_storage_account(&alice, NearToken::from_near(1))
             .unwrap();
         contract
-            .deposit_to_storage_account(&bob, NearToken::from_near(1).as_yoctonear().into())
+            .deposit_to_storage_account(&bob, NearToken::from_near(1))
             .unwrap();
 
         // external; alice is still predecessor
@@ -596,10 +596,10 @@ mod owned_fungible_token {
 
         // internal method calls
         contract
-            .deposit_to_storage_account(&alice, NearToken::from_near(1).as_yoctonear().into())
+            .deposit_to_storage_account(&alice, NearToken::from_near(1))
             .unwrap();
         contract
-            .deposit_to_storage_account(&bob, NearToken::from_near(1).as_yoctonear().into())
+            .deposit_to_storage_account(&bob, NearToken::from_near(1))
             .unwrap();
 
         testing_env!(VMContextBuilder::new().predecessor_account_id(bob).build());
@@ -620,10 +620,10 @@ mod owned_fungible_token {
 
         // internal method calls
         contract
-            .deposit_to_storage_account(&alice, NearToken::from_near(1).as_yoctonear().into())
+            .deposit_to_storage_account(&alice, NearToken::from_near(1))
             .unwrap();
         contract
-            .deposit_to_storage_account(&bob, NearToken::from_near(1).as_yoctonear().into())
+            .deposit_to_storage_account(&bob, NearToken::from_near(1))
             .unwrap();
 
         Nep141Controller::deposit_unchecked(&mut contract, &bob, 100).unwrap();

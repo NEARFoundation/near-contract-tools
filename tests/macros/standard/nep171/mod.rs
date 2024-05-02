@@ -52,12 +52,8 @@ mod full_no_hooks {
         let token_id = "token1".to_string();
         let alice: AccountId = "alice".parse().unwrap();
 
-        Nep145Controller::deposit_to_storage_account(
-            &mut n,
-            &alice,
-            NearToken::from_near(1).as_yoctonear().into(),
-        )
-        .unwrap();
+        Nep145Controller::deposit_to_storage_account(&mut n, &alice, NearToken::from_near(1))
+            .unwrap();
 
         n.mint_with_metadata(token_id.clone(), alice, TokenMetadata::new().title("Title"))
             .unwrap();

@@ -57,8 +57,7 @@ impl Contract {
         let storage_end = env::storage_usage();
         self.lock_storage(
             &env::predecessor_account_id(),
-            ((storage_end - storage_start) as u128 * env::storage_byte_cost().as_yoctonear())
-                .into(),
+            env::storage_byte_cost().saturating_mul(u128::from(storage_end - storage_start)),
         )
         .unwrap_or_else(|e| env::panic_str(&format!("Storage lock error: {}", e)));
     }

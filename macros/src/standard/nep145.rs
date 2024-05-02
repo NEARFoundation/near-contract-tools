@@ -64,7 +64,7 @@ pub fn expand(meta: Nep145Meta) -> Result<TokenStream, darling::Error> {
                 registration_only: Option<bool>,
             ) -> #me::standard::nep145::StorageBalance {
                 use #me::standard::nep145::*;
-                use #near_sdk::{env, json_types::U128, Promise};
+                use #near_sdk::{env, Promise};
 
                 let bounds = Nep145Controller::get_storage_balance_bounds(self);
 
@@ -81,7 +81,7 @@ pub fn expand(meta: Nep145Meta) -> Result<TokenStream, darling::Error> {
                 let storage_balance = Nep145Controller::deposit_to_storage_account(
                     self,
                     &account_id.unwrap_or_else(|| predecessor.clone()),
-                    U128(amount.as_yoctonear()),
+                    amount,
                 )
                 .unwrap_or_else(|e| env::panic_str(&format!("Storage deposit error: {}", e)));
 
@@ -93,9 +93,9 @@ pub fn expand(meta: Nep145Meta) -> Result<TokenStream, darling::Error> {
             }
 
             #[payable]
-            fn storage_withdraw(&mut self, amount: Option<#near_sdk::json_types::U128>) -> #me::standard::nep145::StorageBalance {
+            fn storage_withdraw(&mut self, amount: Option<#near_sdk::NearToken>) -> #me::standard::nep145::StorageBalance {
                 use #me::standard::nep145::*;
-                use #near_sdk::{env, json_types::U128, Promise};
+                use #near_sdk::{env, Promise};
 
                 near_sdk::assert_one_yocto();
 
@@ -106,14 +106,14 @@ pub fn expand(meta: Nep145Meta) -> Result<TokenStream, darling::Error> {
 
                 let amount = amount.unwrap_or(balance.available);
 
-                if amount.0 == 0 {
+                if amount.is_zero() {
                     return balance;
                 }
 
                 let new_balance = Nep145Controller::withdraw_from_storage_account(self, &predecessor, amount)
                     .unwrap_or_else(|e| env::panic_str(&format!("Storage withdraw error: {}", e)));
 
-                Promise::new(predecessor).transfer(#near_sdk::NearToken::from_yoctonear(amount.0));
+                Promise::new(predecessor).transfer(amount);
 
                 new_balance
             }
@@ -143,7 +143,7 @@ pub fn expand(meta: Nep145Meta) -> Result<TokenStream, darling::Error> {
                     }
                 };
 
-                Promise::new(predecessor).transfer(#near_sdk::NearToken::from_yoctonear(refund.0));
+                Promise::new(predecessor).transfer(refund);
                 true
             }
 

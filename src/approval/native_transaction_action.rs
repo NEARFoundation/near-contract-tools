@@ -4,7 +4,7 @@
 
 use near_sdk::{
     borsh::{BorshDeserialize, BorshSerialize},
-    json_types::{Base64VecU8, U128, U64},
+    json_types::{Base64VecU8, U64},
     serde::{Deserialize, Serialize},
     AccountId, Gas, NearToken, Promise,
 };
@@ -30,19 +30,19 @@ pub enum PromiseAction {
         /// Function input (optional)
         arguments: Base64VecU8,
         /// Attached deposit
-        amount: U128,
+        amount: NearToken,
         /// Attached gas
-        gas: U64,
+        gas: Gas,
     },
     /// Native TRANSFER action
     Transfer {
         /// Amount of NEAR tokens to transfer to receiver
-        amount: U128,
+        amount: NearToken,
     },
     /// Native STAKE action
     Stake {
         /// Amount of tokens to stake
-        amount: U128,
+        amount: NearToken,
         /// Public key of validator node
         public_key: String,
     },
@@ -58,7 +58,7 @@ pub enum PromiseAction {
         /// Public key to add to account
         public_key: String,
         /// Gas allowance
-        allowance: U128,
+        allowance: NearToken,
         /// Target contract account ID
         receiver_id: AccountId,
         /// Restrict this key to calls to these functions
@@ -107,7 +107,7 @@ impl<C> super::Action<C> for NativeTransactionAction {
                     nonce,
                 } => promise.add_access_key_allowance_with_nonce(
                     public_key.parse().unwrap(),
-                    near_sdk::Allowance::limited(NearToken::from_yoctonear(allowance.0))
+                    near_sdk::Allowance::limited(allowance)
                         .unwrap_or(near_sdk::Allowance::Unlimited),
                     receiver_id,
                     function_names.join(","),
@@ -125,19 +125,11 @@ impl<C> super::Action<C> for NativeTransactionAction {
                     arguments,
                     amount,
                     gas,
-                } => promise.function_call(
-                    function_name,
-                    arguments.0,
-                    NearToken::from_yoctonear(u128::from(amount)),
-                    Gas::from_gas(gas.0),
-                ),
-                PromiseAction::Transfer { amount } => {
-                    promise.transfer(NearToken::from_yoctonear(amount.0))
+                } => promise.function_call(function_name, arguments.0, amount, gas),
+                PromiseAction::Transfer { amount } => promise.transfer(amount),
+                PromiseAction::Stake { amount, public_key } => {
+                    promise.stake(amount, public_key.parse().unwrap())
                 }
-                PromiseAction::Stake { amount, public_key } => promise.stake(
-                    NearToken::from_yoctonear(amount.0),
-                    public_key.parse().unwrap(),
-                ),
                 PromiseAction::DeleteKey { public_key } => {
                     promise.delete_key(public_key.parse().unwrap())
                 }

@@ -6,7 +6,6 @@ use std::cmp::Ordering;
 use near_sdk::{
     borsh::{BorshDeserialize, BorshSerialize},
     env,
-    json_types::U128,
     serde::{Deserialize, Serialize},
     AccountId, BorshStorageKey, NearToken,
 };
@@ -21,6 +20,8 @@ pub mod hooks;
 
 const PANIC_MESSAGE_STORAGE_TOTAL_OVERFLOW: &str = "storage total balance overflow";
 const PANIC_MESSAGE_STORAGE_AVAILABLE_OVERFLOW: &str = "storage available balance overflow";
+const PANIC_MESSAGE_STORAGE_FEE_OVERFLOW: &str = "storage fee overflow";
+const PANIC_MESSAGE_STORAGE_CREDIT_OVERFLOW: &str = "storage credit overflow";
 const PANIC_MESSAGE_INCONSISTENT_STATE_AVAILABLE: &str =
     "inconsistent state: available storage balance greater than total storage balance";
 
@@ -30,17 +31,17 @@ const PANIC_MESSAGE_INCONSISTENT_STATE_AVAILABLE: &str =
 #[borsh(crate = "near_sdk::borsh")]
 pub struct StorageBalance {
     /// The total amount of storage balance.
-    pub total: U128,
+    pub total: NearToken,
 
     /// The amount of storage balance that is available for use.
-    pub available: U128,
+    pub available: NearToken,
 }
 
 impl Default for StorageBalance {
     fn default() -> Self {
         Self {
-            total: U128(0),
-            available: U128(0),
+            total: NearToken::from_yoctonear(0),
+            available: NearToken::from_yoctonear(0),
         }
     }
 }
@@ -51,19 +52,19 @@ impl Default for StorageBalance {
 #[borsh(crate = "near_sdk::borsh")]
 pub struct StorageBalanceBounds {
     /// The minimum storage balance.
-    pub min: U128,
+    pub min: NearToken,
 
     /// The maximum storage balance.
-    pub max: Option<U128>,
+    pub max: Option<NearToken>,
 }
 
 impl StorageBalanceBounds {
     /// Restricts a balance to be within the bounds.
     pub fn bound(&self, balance: NearToken, registration_only: bool) -> NearToken {
         if registration_only {
-            NearToken::from_yoctonear(self.min.0)
-        } else if let Some(U128(max)) = self.max {
-            NearToken::from_yoctonear(u128::min(max, balance.as_yoctonear()))
+            self.min
+        } else if let Some(max) = self.max {
+            NearToken::from_yoctonear(u128::min(max.as_yoctonear(), balance.as_yoctonear()))
         } else {
             balance
         }
@@ -73,7 +74,7 @@ impl StorageBalanceBounds {
 impl Default for StorageBalanceBounds {
     fn default() -> Self {
         Self {
-            min: U128(0),
+            min: NearToken::from_yoctonear(0),
             max: None,
         }
     }
@@ -138,28 +139,28 @@ pub trait Nep145Controller {
     fn lock_storage(
         &mut self,
         account_id: &AccountId,
-        amount: U128,
+        amount: NearToken,
     ) -> Result<StorageBalance, StorageLockError>;
 
     /// Unlocks the given amount of storage balance for the given account.
     fn unlock_storage(
         &mut self,
         account_id: &AccountId,
-        amount: U128,
+        amount: NearToken,
     ) -> Result<StorageBalance, StorageUnlockError>;
 
     /// Deposits the given amount of storage balance for the given account.
     fn deposit_to_storage_account(
         &mut self,
         account_id: &AccountId,
-        amount: U128,
+        amount: NearToken,
     ) -> Result<StorageBalance, StorageDepositError>;
 
     /// Withdraws the given amount of storage balance for the given account.
     fn withdraw_from_storage_account(
         &mut self,
         account_id: &AccountId,
-        amount: U128,
+        amount: NearToken,
     ) -> Result<StorageBalance, StorageWithdrawError>;
 
     /// Unregisters the given account, returning the amount of storage balance
@@ -167,14 +168,14 @@ pub trait Nep145Controller {
     fn unregister_storage_account(
         &mut self,
         account_id: &AccountId,
-    ) -> Result<U128, StorageUnregisterError>;
+    ) -> Result<NearToken, StorageUnregisterError>;
 
     /// Force unregisters the given account, returning the amount of storage balance
     /// that should be refunded.
     fn force_unregister_storage_account(
         &mut self,
         account_id: &AccountId,
-    ) -> Result<U128, StorageForceUnregisterError>;
+    ) -> Result<NearToken, StorageForceUnregisterError>;
 
     /// Returns the storage balance bounds for the contract.
     fn get_storage_balance_bounds(&self) -> StorageBalanceBounds;
@@ -195,17 +196,19 @@ pub trait Nep145Controller {
             Ordering::Equal => {}
             Ordering::Greater => {
                 let storage_consumed = storage_usage_end - storage_usage_start;
-                let storage_fee =
-                    env::storage_byte_cost().as_yoctonear() * storage_consumed as u128;
+                let storage_fee = env::storage_byte_cost()
+                    .checked_mul(u128::from(storage_consumed))
+                    .unwrap_or_else(|| env::panic_str(PANIC_MESSAGE_STORAGE_FEE_OVERFLOW));
 
-                Nep145Controller::lock_storage(self, account_id, storage_fee.into())?;
+                Nep145Controller::lock_storage(self, account_id, storage_fee)?;
             }
             Ordering::Less => {
                 let storage_released = storage_usage_start - storage_usage_end;
-                let storage_credit =
-                    env::storage_byte_cost().as_yoctonear() * storage_released as u128;
+                let storage_credit = env::storage_byte_cost()
+                    .checked_mul(u128::from(storage_released))
+                    .unwrap_or_else(|| env::panic_str(PANIC_MESSAGE_STORAGE_CREDIT_OVERFLOW));
 
-                Nep145Controller::unlock_storage(self, account_id, storage_credit.into())?;
+                Nep145Controller::unlock_storage(self, account_id, storage_credit)?;
             }
         };
 
@@ -228,23 +231,22 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
     fn lock_storage(
         &mut self,
         account_id: &AccountId,
-        amount: U128,
+        amount: NearToken,
     ) -> Result<StorageBalance, StorageLockError> {
         let mut account_slot = Self::slot_account(account_id);
         let mut balance = account_slot
             .read()
             .ok_or(AccountNotRegisteredError(account_id.clone()))?;
 
-        balance.available = balance
-            .available
-            .0
-            .checked_sub(amount.0)
-            .ok_or(InsufficientBalanceError {
-                account_id: account_id.clone(),
-                attempted_to_lock: amount,
-                available: balance.available,
-            })?
-            .into();
+        balance.available =
+            balance
+                .available
+                .checked_sub(amount)
+                .ok_or(InsufficientBalanceError {
+                    account_id: account_id.clone(),
+                    attempted_to_use: amount,
+                    available: balance.available,
+                })?;
 
         account_slot.write(&balance);
 
@@ -254,7 +256,7 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
     fn unlock_storage(
         &mut self,
         account_id: &AccountId,
-        amount: U128,
+        amount: NearToken,
     ) -> Result<StorageBalance, StorageUnlockError> {
         let mut account_slot = Self::slot_account(account_id);
 
@@ -265,10 +267,8 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
         balance.available = {
             let new_available = balance
                 .available
-                .0
-                .checked_add(amount.0)
-                .unwrap_or_else(|| env::panic_str(PANIC_MESSAGE_STORAGE_AVAILABLE_OVERFLOW))
-                .into();
+                .checked_add(amount)
+                .unwrap_or_else(|| env::panic_str(PANIC_MESSAGE_STORAGE_AVAILABLE_OVERFLOW));
 
             if new_available > balance.total {
                 return Err(ExcessiveUnlockError(account_id.clone()).into());
@@ -285,22 +285,21 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
     fn deposit_to_storage_account(
         &mut self,
         account_id: &AccountId,
-        amount: U128,
+        amount: NearToken,
     ) -> Result<StorageBalance, StorageDepositError> {
         let mut account_slot = Self::slot_account(account_id);
 
         let mut balance = account_slot.read().unwrap_or_default();
 
-        balance.total.0 = {
+        balance.total = {
             let new_total = balance
                 .total
-                .0
-                .checked_add(amount.0)
+                .checked_add(amount)
                 .unwrap_or_else(|| env::panic_str(PANIC_MESSAGE_STORAGE_TOTAL_OVERFLOW));
 
             let bounds = self.get_storage_balance_bounds();
 
-            if new_total < bounds.min.0 {
+            if new_total < bounds.min {
                 return Err(MinimumBalanceUnderrunError {
                     account_id: account_id.clone(),
                     minimum_balance: bounds.min,
@@ -309,7 +308,7 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
             }
 
             if let Some(maximum_balance) = bounds.max {
-                if new_total > maximum_balance.0 {
+                if new_total > maximum_balance {
                     return Err(MaximumBalanceOverrunError {
                         account_id: account_id.clone(),
                         maximum_balance,
@@ -321,7 +320,10 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
             new_total
         };
 
-        balance.available.0 += amount.0;
+        balance.available = balance
+            .available
+            .checked_add(amount)
+            .unwrap_or_else(|| env::panic_str(PANIC_MESSAGE_INCONSISTENT_STATE_AVAILABLE));
 
         account_slot.write(&balance);
 
@@ -331,7 +333,7 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
     fn withdraw_from_storage_account(
         &mut self,
         account_id: &AccountId,
-        amount: U128,
+        amount: NearToken,
     ) -> Result<StorageBalance, StorageWithdrawError> {
         let mut account_slot = Self::slot_account(account_id);
 
@@ -339,14 +341,23 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
             .read()
             .ok_or_else(|| AccountNotRegisteredError(account_id.clone()))?;
 
-        balance.total.0 = {
+        balance.available =
+            balance
+                .available
+                .checked_sub(amount)
+                .ok_or_else(|| InsufficientBalanceError {
+                    account_id: account_id.clone(),
+                    available: balance.available,
+                    attempted_to_use: amount,
+                })?;
+
+        balance.total = {
             let bounds = self.get_storage_balance_bounds();
 
             balance
                 .total
-                .0
-                .checked_sub(amount.0)
-                .filter(|&new_total| new_total >= bounds.min.0)
+                .checked_sub(amount)
+                .filter(|&new_total| new_total >= bounds.min)
                 .ok_or(MinimumBalanceUnderrunError {
                     account_id: account_id.clone(),
                     minimum_balance: bounds.min,
@@ -361,18 +372,18 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
     fn unregister_storage_account(
         &mut self,
         account_id: &AccountId,
-    ) -> Result<U128, StorageUnregisterError> {
+    ) -> Result<NearToken, StorageUnregisterError> {
         let mut account_slot = Self::slot_account(account_id);
 
         let balance = account_slot
             .read()
             .ok_or_else(|| AccountNotRegisteredError(account_id.clone()))?;
 
-        match balance.total.0.checked_sub(balance.available.0) {
-            Some(locked_balance) if locked_balance > 0 => {
+        match balance.total.checked_sub(balance.available) {
+            Some(locked_balance) if !locked_balance.is_zero() => {
                 return Err(UnregisterWithLockedBalanceError {
                     account_id: account_id.clone(),
-                    locked_balance: U128(locked_balance),
+                    locked_balance,
                 }
                 .into())
             }
@@ -388,7 +399,7 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
     fn force_unregister_storage_account(
         &mut self,
         account_id: &AccountId,
-    ) -> Result<U128, StorageForceUnregisterError> {
+    ) -> Result<NearToken, StorageForceUnregisterError> {
         let mut account_slot = Self::slot_account(account_id);
 
         let balance = account_slot

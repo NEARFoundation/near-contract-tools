@@ -1,6 +1,7 @@
 use near_sdk::{
     json_types::{Base64VecU8, U128},
     serde_json::json,
+    NearToken,
 };
 use near_sdk_contract_tools::{
     nft::StorageBalance,
@@ -296,7 +297,7 @@ async fn fail_run_out_of_space() {
             InsufficientBalanceError {
                 account_id: alice.id().as_str().parse().unwrap(),
                 available: balance.available,
-                attempted_to_lock: 100490000000000000000000u128.into()
+                attempted_to_use: NearToken::from_yoctonear(100490000000000000000000),
             }
         ),
     );
