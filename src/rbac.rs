@@ -211,24 +211,21 @@ impl ExactSizeIterator for Iter {}
 
 #[cfg(test)]
 mod tests {
-    use near_sdk::{
-        borsh::BorshSerialize, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId,
-        BorshStorageKey,
-    };
+    use near_sdk::{near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey, PanicOnDefault};
     use near_sdk_contract_tools_macros::Rbac;
 
     use super::Rbac;
 
-    #[derive(BorshSerialize, BorshStorageKey)]
-    #[borsh(crate = "near_sdk::borsh")]
+    #[derive(BorshStorageKey)]
+    #[near]
     enum Role {
         A,
         B,
     }
 
-    #[derive(Rbac)]
+    #[derive(Rbac, PanicOnDefault)]
     #[rbac(roles = "Role", crate = "crate")]
-    #[near_bindgen]
+    #[near(contract_state)]
     struct Contract {}
 
     #[test]

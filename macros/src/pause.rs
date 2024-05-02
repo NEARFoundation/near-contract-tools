@@ -43,7 +43,7 @@ pub fn expand(meta: PauseMeta) -> Result<TokenStream, darling::Error> {
             #root
         }
 
-        #[#near_sdk::near_bindgen]
+        #[#near_sdk::near]
         impl #imp #me::pause::PauseExternal for #ident #ty #wher {
             fn paus_is_paused(&self) -> bool {
                 <Self as #me::pause::Pause>::is_paused()

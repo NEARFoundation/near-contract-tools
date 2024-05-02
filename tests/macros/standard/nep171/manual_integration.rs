@@ -1,5 +1,4 @@
-use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
-use near_sdk::{env, near_bindgen, PanicOnDefault};
+use near_sdk::{env, near, PanicOnDefault};
 use near_sdk_contract_tools::{
     hook::Hook,
     owner::Owner,
@@ -12,9 +11,7 @@ use near_sdk_contract_tools::{
     Nep171, Nep177, Nep178, Nep181, Owner, Pause,
 };
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(PanicOnDefault, Nep171, Nep177, Nep178, Nep181, Pause, Owner)]
+#[derive(Nep171, Nep177, Nep178, Nep181, Pause, Owner, PanicOnDefault)]
 #[nep171(
     all_hooks = "(nep178::TokenApprovals, nep181::TokenEnumeration)",
     transfer_hook = "Self",
@@ -22,7 +19,7 @@ use near_sdk_contract_tools::{
     token_data = "(nep177::TokenMetadata, nep178::TokenApprovals)"
 )]
 #[nep178()]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct Contract {
     next_token_id: u32,
 }
@@ -38,7 +35,7 @@ impl Hook<Contract, action::Nep171Transfer<'_>> for Contract {
     }
 }
 
-#[near_bindgen]
+#[near]
 impl Contract {
     #[init]
     pub fn new() -> Self {

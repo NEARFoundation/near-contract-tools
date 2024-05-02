@@ -68,7 +68,7 @@ pub fn expand(meta: Nep141Meta) -> Result<TokenStream, darling::Error> {
             #root
         }
 
-        #[#near_sdk::near_bindgen]
+        #[#near_sdk::near]
         impl #imp #me::standard::nep141::Nep141 for #ident #ty #wher {
             #[payable]
             fn ft_transfer(
@@ -157,7 +157,7 @@ pub fn expand(meta: Nep141Meta) -> Result<TokenStream, darling::Error> {
             }
         }
 
-        #[#near_sdk::near_bindgen]
+        #[#near_sdk::near]
         impl #imp #me::standard::nep141::Nep141Resolver for #ident #ty #wher {
             #[private]
             fn ft_resolve_transfer(

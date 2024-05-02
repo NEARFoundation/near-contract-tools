@@ -3,19 +3,15 @@
 ## NFT
 
 ```diff
-use near_sdk::{
-    borsh::{BorshSerialize, BorshDeserialize},
-    near_bindgen, PanicOnDefault,
-};
+use near_sdk::{near, PanicOnDefault};
 + use near_sdk_contract_tools::nft::*;
 
-#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
+#[derive(PanicOnDefault)]
 + #[derive(NonFungibleToken)]
-#[borsh(crate = "near_sdk::borsh")]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct MyNftContract {}
 
-#[near_bindgen]
+#[near]
 impl MyNftContract {
     #[init]
     pub fn new() -> Self {
@@ -35,19 +31,15 @@ impl MyNftContract {
 ## FT
 
 ```diff
-use near_sdk::{
-    borsh::{BorshSerialize, BorshDeserialize},
-    near_bindgen, PanicOnDefault,
-};
+use near_sdk::{near, PanicOnDefault};
 + use near_sdk_contract_tools::ft::*;
 
-#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
+#[derive(PanicOnDefault)]
 + #[derive(FungibleToken)]
-#[borsh(crate = "near_sdk::borsh")]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct MyFtContract {}
 
-#[near_bindgen]
+#[near]
 impl MyFtContract {
     #[init]
     pub fn new() -> Self {
@@ -98,16 +90,16 @@ See also: [the full integration tests](tests/macros/mod.rs).
 ### Owner
 
 ```rust
-use near_sdk::{near_bindgen, AccountId};
+use near_sdk::{near, AccountId, PanicOnDefault};
 use near_sdk_contract_tools::{owner::Owner, Owner};
 
-#[derive(Owner)]
-#[near_bindgen]
+#[derive(Owner, PanicOnDefault)]
+#[near(contract_state)]
 struct Contract {
     // ...
 }
 
-#[near_bindgen]
+#[near]
 impl Contract {
     #[init]
     pub fn new(owner_id: AccountId) -> Self {
@@ -166,13 +158,13 @@ To create a contract that is compatible with the [NEP-141][nep141], [NEP-145][ne
 
 ```rust
 use near_sdk_contract_tools::ft::*;
-use near_sdk::near_bindgen;
+use near_sdk::{near, PanicOnDefault};
 
-#[derive(FungibleToken)]
-#[near_bindgen]
+#[derive(FungibleToken, PanicOnDefault)]
+#[near(contract_state)]
 struct MyFt {}
 
-#[near_bindgen]
+#[near]
 impl MyFt {
     #[init]
     pub fn new() -> Self {
@@ -196,16 +188,11 @@ Standalone macros for each individual standard also exist.
 Use the `NonFungibleToken` derive macro to implement [NEP-145][nep145], [NEP-171][nep171], [NEP-177][nep177], [NEP-178][nep178], and [NEP-181][nep181], with [NEP-297][nep297] events.
 
 ```rust
-use near_sdk::{
-    borsh::{BorshSerialize, BorshDeserialize},
-    PanicOnDefault,
-    near_bindgen,
-};
+use near_sdk::{near, PanicOnDefault};
 use near_sdk_contract_tools::nft::*;
 
-#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, NonFungibleToken)]
-#[borsh(crate = "near_sdk::borsh")]
-#[near_bindgen]
+#[derive(NonFungibleToken, PanicOnDefault)]
+#[near(contract_state)]
 pub struct MyNft {}
 ```
 
@@ -219,16 +206,11 @@ use near_sdk_contract_tools::{
     pause::{*, hooks::PausableHook},
     Pause,
 };
-use near_sdk::{
-    borsh::{self, BorshSerialize, BorshDeserialize},
-    PanicOnDefault,
-    near_bindgen,
-};
+use near_sdk::{near, PanicOnDefault};
 
-#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, FungibleToken, Pause)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(FungibleToken, Pause, PanicOnDefault)]
 #[fungible_token(all_hooks = "PausableHook")]
-#[near_bindgen]
+#[near(contract_state)]
 struct Contract {}
 ```
 

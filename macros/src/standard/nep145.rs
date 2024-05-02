@@ -55,7 +55,7 @@ pub fn expand(meta: Nep145Meta) -> Result<TokenStream, darling::Error> {
             #root
         }
 
-        #[#near_sdk::near_bindgen]
+        #[#near_sdk::near]
         impl #imp #me::standard::nep145::Nep145 for #ident #ty #wher {
             #[payable]
             fn storage_deposit(

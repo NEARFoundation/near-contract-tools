@@ -140,7 +140,7 @@ pub fn expand(meta: UpgradeMeta) -> Result<TokenStream, darling::Error> {
         };
 
     Ok(quote! {
-        #[#near_sdk::near_bindgen]
+        #[#near_sdk::near]
         impl #imp #ident #ty #wher {
             pub fn upgrade(&mut self, #serializer_attribute code: #code_type) {
                 #me::upgrade::serialized::UpgradeHook::on_upgrade(self);

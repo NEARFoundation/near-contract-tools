@@ -1,16 +1,13 @@
-use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
-use near_sdk::{env, near_bindgen, PanicOnDefault};
+use near_sdk::{env, near, PanicOnDefault};
 use near_sdk_contract_tools::nft::*;
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(PanicOnDefault, Nep171)]
-#[near_bindgen]
+#[derive(Nep171, PanicOnDefault)]
+#[near(contract_state)]
 pub struct Contract {
     pub next_token_id: u32,
 }
 
-#[near_bindgen]
+#[near]
 impl Contract {
     pub fn mint(&mut self) -> TokenId {
         let token_id = format!("token_{}", self.next_token_id);

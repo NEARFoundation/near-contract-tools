@@ -4,10 +4,7 @@
 use std::cmp::Ordering;
 
 use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env,
-    serde::{Deserialize, Serialize},
-    AccountId, BorshStorageKey, NearToken,
+    borsh::BorshSerialize, env, near, serde::Serialize, AccountId, BorshStorageKey, NearToken,
 };
 
 use crate::{hook::Hook, slot::Slot, DefaultStorageKey};
@@ -26,9 +23,8 @@ const PANIC_MESSAGE_INCONSISTENT_STATE_AVAILABLE: &str =
     "inconsistent state: available storage balance greater than total storage balance";
 
 /// An account's storage balance.
-#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq, Eq)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[near(serializers = [borsh, json])]
 pub struct StorageBalance {
     /// The total amount of storage balance.
     pub total: NearToken,
@@ -47,9 +43,8 @@ impl Default for StorageBalance {
 }
 
 /// Storage balance bounds.
-#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq, Eq)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[near(serializers = [borsh, json])]
 pub struct StorageBalanceBounds {
     /// The minimum storage balance.
     pub min: NearToken,

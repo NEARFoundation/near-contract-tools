@@ -4,9 +4,7 @@
 use std::{collections::HashMap, error::Error};
 
 use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    collections::UnorderedMap,
-    AccountId, BorshStorageKey,
+    borsh::BorshSerialize, collections::UnorderedMap, near, AccountId, BorshStorageKey,
 };
 
 use crate::{
@@ -35,8 +33,8 @@ pub type ApprovalId = u32;
 pub const MAX_APPROVALS: u64 = 32;
 
 /// NFT token approvals. Hooks are implemented on this struct.
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Debug)]
+#[near]
 pub struct TokenApprovals {
     /// The next approval ID to use. Only incremented.
     pub next_approval_id: ApprovalId,

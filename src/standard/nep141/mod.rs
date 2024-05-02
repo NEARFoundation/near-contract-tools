@@ -1,7 +1,7 @@
 //! NEP-141 fungible token core implementation
 //! <https://github.com/near/NEPs/blob/master/neps/nep-0141.md>
 
-use near_sdk::{borsh::BorshSerialize, serde::Serialize, AccountId, BorshStorageKey, Gas};
+use near_sdk::{borsh::BorshSerialize, near, serde::Serialize, AccountId, BorshStorageKey, Gas};
 
 use crate::{hook::Hook, slot::Slot, standard::nep297::*, DefaultStorageKey};
 
@@ -24,8 +24,8 @@ pub const GAS_FOR_FT_TRANSFER_CALL: Gas =
 /// Error message for insufficient gas.
 pub const MORE_GAS_FAIL_MESSAGE: &str = "Insufficient gas attached.";
 
-#[derive(BorshSerialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(BorshStorageKey)]
+#[near]
 enum StorageKey {
     TotalSupply,
     Account(AccountId),

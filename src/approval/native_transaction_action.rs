@@ -3,18 +3,15 @@
 //! transfer)
 
 use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
     json_types::{Base64VecU8, U64},
-    serde::{Deserialize, Serialize},
-    AccountId, Gas, NearToken, Promise,
+    near, AccountId, Gas, NearToken, Promise,
 };
 
 /// Every native NEAR action can be mapped to a Promise action.
 /// NOTE: The native ADD_KEY action is split into two: one for adding a
 /// full-access key, one for a function call access key.
-#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[near(serializers = [borsh, json])]
 pub enum PromiseAction {
     /// Native CREATE_ACCOUNT action
     CreateAccount,
@@ -80,9 +77,8 @@ pub enum PromiseAction {
 
 /// A native protocol-level transaction that (de)serializes into many different
 /// formats
-#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Eq, PartialEq, Clone, Debug)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Eq, PartialEq, Clone, Debug)]
+#[near(serializers = [borsh, json])]
 pub struct NativeTransactionAction {
     /// Receiver of the transaction
     pub receiver_id: AccountId,

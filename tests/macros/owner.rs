@@ -1,7 +1,4 @@
-use near_sdk::{
-    borsh::BorshSerialize, env, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId,
-    BorshStorageKey,
-};
+use near_sdk::{env, near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey, PanicOnDefault};
 use near_sdk_contract_tools::{
     owner::{Owner, OwnerExternal},
     Owner,
@@ -10,13 +7,13 @@ use near_sdk_contract_tools::{
 mod implicit_key {
     use super::*;
 
-    #[derive(Owner)]
-    #[near_bindgen]
+    #[derive(Owner, PanicOnDefault)]
+    #[near(contract_state)]
     pub struct OwnedStructImplicitKey {
         pub permissioned_item: u32,
     }
 
-    #[near_bindgen]
+    #[near]
     impl OwnedStructImplicitKey {
         #[init]
         pub fn new() -> Self {
@@ -43,20 +40,20 @@ mod implicit_key {
 }
 use implicit_key::OwnedStructImplicitKey;
 
-#[derive(BorshSerialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(BorshStorageKey)]
+#[near]
 enum StorageKey {
     MyStorageKey,
 }
 
-#[derive(Owner)]
+#[derive(Owner, PanicOnDefault)]
 #[owner(storage_key = "StorageKey::MyStorageKey")]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct OwnedStructExplicitKey {
     pub permissioned_item: u32,
 }
 
-#[near_bindgen]
+#[near]
 impl OwnedStructExplicitKey {
     #[init]
     pub fn new() -> Self {

@@ -1,6 +1,6 @@
 workspaces_tests::predicate!();
 
-use near_sdk::{env, near, AccountId, BorshStorageKey, Promise};
+use near_sdk::{env, near, AccountId, BorshStorageKey, PanicOnDefault, Promise};
 use near_sdk_contract_tools::{
     approval::{
         native_transaction_action::{self, NativeTransactionAction},
@@ -17,7 +17,7 @@ pub enum Role {
     Multisig,
 }
 
-#[derive(Rbac, SimpleMultisig)]
+#[derive(Rbac, SimpleMultisig, PanicOnDefault)]
 #[simple_multisig(action = "NativeTransactionAction", role = "Role::Multisig")]
 #[rbac(roles = "Role")]
 #[near(contract_state)]

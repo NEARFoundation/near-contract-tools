@@ -2,7 +2,7 @@ workspaces_tests::predicate!();
 
 use std::fmt::Display;
 
-use near_sdk::{env, near, AccountId, BorshStorageKey};
+use near_sdk::{env, near, AccountId, BorshStorageKey, PanicOnDefault};
 use near_sdk_contract_tools::{
     approval::{
         self,
@@ -44,7 +44,7 @@ pub enum Role {
     Multisig,
 }
 
-#[derive(Rbac)]
+#[derive(Rbac, PanicOnDefault)]
 #[rbac(roles = "Role")]
 #[near(contract_state)]
 pub struct Contract {}

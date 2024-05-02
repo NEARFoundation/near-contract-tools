@@ -43,7 +43,7 @@ pub fn expand(meta: OwnerMeta) -> Result<TokenStream, darling::Error> {
             #root
         }
 
-        #[#near_sdk::near_bindgen]
+        #[#near_sdk::near]
         impl #imp #me::owner::OwnerExternal for #ident #ty #wher {
             fn own_get_owner(&self) -> Option<#near_sdk::AccountId> {
                 <Self as #me::owner::OwnerInternal>::slot_owner().read()

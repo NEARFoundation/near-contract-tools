@@ -1,11 +1,11 @@
-use near_sdk::{json_types::Base64VecU8, near_bindgen};
+use near_sdk::{json_types::Base64VecU8, near, PanicOnDefault};
 use near_sdk_contract_tools::{standard::nep148::*, Nep148};
 
-#[derive(Nep148)]
-#[near_bindgen]
+#[derive(Nep148, PanicOnDefault)]
+#[near(contract_state)]
 struct DerivesFTMetadata {}
 
-#[near_bindgen]
+#[near]
 impl DerivesFTMetadata {
     #[init]
     pub fn new() -> Self {

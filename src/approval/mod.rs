@@ -2,8 +2,8 @@
 
 use near_sdk::{
     borsh::{BorshDeserialize, BorshSerialize},
-    env, require,
-    serde::{Deserialize, Serialize},
+    env, near, require,
+    serde::Serialize,
     AccountId, BorshStorageKey,
 };
 use thiserror::Error;
@@ -64,9 +64,8 @@ pub trait ApprovalConfiguration<A, S> {
 
 /// An action request is composed of an action that will be executed when the
 /// associated approval state is satisfied.
-#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Debug)]
-#[borsh(crate = "near_sdk::borsh")]
-#[serde(crate = "near_sdk::serde")]
+#[derive(Debug)]
+#[near(serializers = [borsh, json])]
 pub struct ActionRequest<A, S> {
     /// The action that will be executed when the approval state is fulfilled.
     pub action: A,
@@ -74,8 +73,8 @@ pub struct ActionRequest<A, S> {
     pub approval_state: S,
 }
 
-#[derive(BorshSerialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(BorshStorageKey)]
+#[near]
 enum ApprovalStorageKey {
     NextRequestId,
     Config,
@@ -336,13 +335,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use near_sdk::{
-        borsh::{BorshDeserialize, BorshSerialize},
-        near_bindgen,
-        serde::{Deserialize, Serialize},
-        test_utils::VMContextBuilder,
-        testing_env, AccountId, BorshStorageKey,
-    };
+    use near_sdk::{near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey, PanicOnDefault};
     use near_sdk_contract_tools_macros::Rbac;
 
     use crate::{rbac::Rbac, slot::Slot};
@@ -351,14 +344,14 @@ mod tests {
         Action, ActionRequest, ApprovalConfiguration, ApprovalManager, ApprovalManagerInternal,
     };
 
-    #[derive(BorshSerialize, BorshStorageKey)]
-    #[borsh(crate = "near_sdk::borsh")]
+    #[derive(BorshStorageKey)]
+    #[near]
     enum Role {
         Multisig,
     }
 
-    #[derive(BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Clone)]
-    #[borsh(crate = "near_sdk::borsh")]
+    #[derive(Debug, PartialEq, Eq, Clone)]
+    #[near]
     enum MyAction {
         SayHello,
         SayGoodbye,
@@ -381,12 +374,12 @@ mod tests {
         }
     }
 
-    #[derive(Rbac)]
+    #[derive(Rbac, PanicOnDefault)]
     #[rbac(roles = "Role", crate = "crate")]
-    #[near_bindgen]
+    #[near(contract_state)]
     struct Contract {}
 
-    #[near_bindgen]
+    #[near]
     impl Contract {
         #[init]
         pub fn new(threshold: u8) -> Self {
@@ -404,15 +397,14 @@ mod tests {
         }
     }
 
-    #[derive(BorshSerialize, BorshDeserialize, Debug)]
-    #[borsh(crate = "near_sdk::borsh")]
+    #[derive(Debug)]
+    #[near]
     struct MultisigConfig {
         pub threshold: u8,
     }
 
-    #[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Default, Debug)]
-    #[borsh(crate = "near_sdk::borsh")]
-    #[serde(crate = "near_sdk::serde")]
+    #[derive(Default, Debug)]
+    #[near(serializers = [borsh, json])]
     struct MultisigApprovalState {
         pub approved_by: Vec<AccountId>,
     }

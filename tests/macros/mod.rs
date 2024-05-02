@@ -1,8 +1,6 @@
 use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env, near_bindgen,
-    test_utils::VMContextBuilder,
-    testing_env, AccountId, BorshStorageKey,
+    env, near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey,
+    PanicOnDefault,
 };
 use near_sdk_contract_tools::{
     escrow::Escrow, migrate::MigrateHook, owner::Owner, pause::Pause, rbac::Rbac,
@@ -36,16 +34,16 @@ mod my_event {
     }
 }
 
-#[derive(BorshSerialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(BorshStorageKey)]
+#[near]
 enum StorageKey {
     Owner,
     Pause,
     Rbac,
 }
 
-#[derive(BorshSerialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(BorshStorageKey)]
+#[near]
 pub enum Role {
     CanPause,
     CanSetValue,
@@ -54,18 +52,17 @@ pub enum Role {
 mod integration {
     use super::*;
 
-    #[derive(BorshSerialize, BorshDeserialize, Owner, Pause, Rbac, Escrow)]
-    #[borsh(crate = "near_sdk::borsh")]
+    #[derive(Owner, Pause, Rbac, Escrow, PanicOnDefault)]
     #[owner(storage_key = "StorageKey::Owner")]
     #[pause(storage_key = "StorageKey::Pause")]
     #[rbac(storage_key = "StorageKey::Rbac", roles = "Role")]
     #[escrow(storage_key = "StorageKey::Owner", id = "u64", state = "String")]
-    #[near_bindgen]
+    #[near(contract_state)]
     pub struct Integration {
         pub value: u32,
     }
 
-    #[near_bindgen]
+    #[near]
     impl Integration {
         #[init]
         pub fn new(owner_id: AccountId) -> Self {
@@ -130,14 +127,12 @@ mod integration {
 }
 use integration::Integration;
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(Migrate, Owner, Pause, Rbac)]
+#[derive(Migrate, Owner, Pause, Rbac, PanicOnDefault)]
 #[migrate(from = "Integration")]
 #[owner(storage_key = "StorageKey::Owner")]
 #[pause(storage_key = "StorageKey::Pause")]
 #[rbac(storage_key = "StorageKey::Rbac", roles = "Role")]
-#[near_bindgen]
+#[near(contract_state)]
 struct MigrateIntegration {
     pub new_value: String,
     pub moved_value: u32,
@@ -155,7 +150,7 @@ impl MigrateHook for MigrateIntegration {
     }
 }
 
-#[near_bindgen]
+#[near]
 impl MigrateIntegration {
     pub fn add_value_setter(&mut self, account_id: AccountId) {
         Self::require_owner();
@@ -394,9 +389,9 @@ fn integration_fail_cannot_lock_twice() {
 
 #[cfg(test)]
 mod pausable_fungible_token {
-    use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
-    use near_sdk::NearToken;
-    use near_sdk::{env, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId};
+    use near_sdk::{
+        env, near, test_utils::VMContextBuilder, testing_env, AccountId, NearToken, PanicOnDefault,
+    };
     use near_sdk_contract_tools::{
         ft::*,
         hook::Hook,
@@ -404,16 +399,14 @@ mod pausable_fungible_token {
         Pause,
     };
 
-    #[derive(BorshSerialize, BorshDeserialize)]
-    #[borsh(crate = "near_sdk::borsh")]
-    #[derive(FungibleToken, Pause)]
+    #[derive(FungibleToken, Pause, PanicOnDefault)]
     #[fungible_token(all_hooks = "PausableHook", transfer_hook = "TransferHook")]
-    #[near_bindgen]
+    #[near(contract_state)]
     struct Contract {
         pub storage_usage: u64,
     }
 
-    #[near_bindgen]
+    #[near]
     impl Contract {
         #[init]
         pub fn new() -> Self {
@@ -506,11 +499,9 @@ mod pausable_fungible_token {
 
 #[cfg(test)]
 mod owned_fungible_token {
-    use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
-    use near_sdk::NearToken;
+    use near_sdk::{NearToken, PanicOnDefault};
     use near_sdk::{
-        env, json_types::U128, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId,
-        PanicOnDefault,
+        env, json_types::U128, near, test_utils::VMContextBuilder, testing_env, AccountId,
     };
     use near_sdk_contract_tools::{
         ft::*,
@@ -518,14 +509,12 @@ mod owned_fungible_token {
         Owner,
     };
 
-    #[derive(BorshSerialize, BorshDeserialize)]
-    #[borsh(crate = "near_sdk::borsh")]
-    #[derive(PanicOnDefault, Owner, FungibleToken)]
+    #[derive(Owner, FungibleToken, PanicOnDefault)]
     #[fungible_token(all_hooks = "OnlyOwner")] // only the owner can transfer, etc. the tokens
-    #[near_bindgen]
+    #[near(contract_state)]
     pub struct Contract {}
 
-    #[near_bindgen]
+    #[near]
     impl Contract {
         #[init]
         pub fn new() -> Self {

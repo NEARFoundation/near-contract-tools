@@ -1,7 +1,8 @@
 workspaces_tests::predicate!();
 
-use near_sdk::near;
+use near_sdk::{near, PanicOnDefault};
 
+#[derive(PanicOnDefault)]
 #[near(contract_state)]
 pub struct Contract {}
 

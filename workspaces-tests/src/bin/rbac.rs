@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use near_sdk_contract_tools::{rbac::Rbac, Rbac};
 
-use near_sdk::{env, near, AccountId, BorshStorageKey};
+use near_sdk::{env, near, AccountId, BorshStorageKey, PanicOnDefault};
 
 #[derive(BorshStorageKey)]
 #[near]
@@ -29,7 +29,7 @@ impl FromStr for Role {
     }
 }
 
-#[derive(Rbac)]
+#[derive(Rbac, PanicOnDefault)]
 #[rbac(roles = "Role")]
 #[near(contract_state, serializers = [borsh, json])]
 pub struct Contract {

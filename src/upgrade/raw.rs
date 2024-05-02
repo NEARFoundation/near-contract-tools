@@ -8,7 +8,7 @@
 //! # Warning
 //!
 //! Functions in this module are generally _not callable_ from any call tree
-//! originating from a function annotated by `#[near_bindgen]`.
+//! originating from a function annotated by `#[near]`.
 
 use near_sdk::{env, sys};
 
@@ -18,7 +18,7 @@ use super::PostUpgrade;
 /// This function automatically sets the return value of the function call to
 /// the contract deployment &rarr; migrate function call promise, so the
 /// contract should not try to return any other values. This also means that
-/// this function probably should not be called from a `#[near_bindgen]`
+/// this function probably should not be called from a `#[near]`
 /// context, since the macro may automatically set a different return value.
 ///
 /// # Safety

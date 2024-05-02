@@ -1,9 +1,9 @@
 workspaces_tests::predicate!();
 
-use near_sdk::{env, near};
+use near_sdk::{env, near, PanicOnDefault};
 use near_sdk_contract_tools::{owner::*, Owner, Upgrade};
 
-#[derive(Owner, Upgrade)]
+#[derive(Owner, Upgrade, PanicOnDefault)]
 #[upgrade(serializer = "jsonbase64", hook = "owner")]
 #[near(contract_state)]
 pub struct ContractOld {

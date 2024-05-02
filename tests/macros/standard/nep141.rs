@@ -1,19 +1,12 @@
 use near_sdk::{
-    borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::Vector,
-    env,
-    json_types::U128,
-    log, near_bindgen,
-    test_utils::VMContextBuilder,
-    testing_env, AccountId, NearToken, PromiseOrValue,
+    borsh, collections::Vector, env, json_types::U128, log, near, test_utils::VMContextBuilder,
+    testing_env, AccountId, NearToken, PanicOnDefault, PromiseOrValue,
 };
 use near_sdk_contract_tools::{hook::Hook, standard::nep141::*, Nep141};
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(Nep141)]
+#[derive(Nep141, PanicOnDefault)]
 #[nep141(transfer_hook = "TransferHook")]
-#[near_bindgen]
+#[near(contract_state)]
 struct FungibleToken {
     pub transfers: Vector<Vec<u8>>,
     pub hooks: Vector<String>,
@@ -42,7 +35,8 @@ impl Hook<FungibleToken, Nep141Transfer<'_>> for TransferHook {
 mod receiver {
     use super::*;
 
-    #[near_bindgen]
+    #[derive(PanicOnDefault)]
+    #[near(contract_state)]
     struct FungibleTokenReceiver {
         pub log: Vector<(String, u128)>,
     }

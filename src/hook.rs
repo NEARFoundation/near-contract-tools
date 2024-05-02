@@ -8,7 +8,7 @@
 //! ## Example
 //!
 //! ```
-//! use near_sdk::{env, log, near_bindgen};
+//! use near_sdk::{env, log, near, PanicOnDefault};
 //! use near_sdk_contract_tools::{hook::Hook, standard::nep141::*, Nep141};
 //!
 //! pub struct MyTransferHook;
@@ -29,9 +29,9 @@
 //!     }
 //! }
 //!
-//! #[derive(Nep141)]
+//! #[derive(Nep141, PanicOnDefault)]
 //! #[nep141(transfer_hook = "MyTransferHook")]
-//! #[near_bindgen]
+//! #[near(contract_state)]
 //! struct MyContract {}
 //! ```
 

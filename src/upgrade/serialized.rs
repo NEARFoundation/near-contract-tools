@@ -1,5 +1,5 @@
 //! Contract upgrade functions that work as expected in conjunction with
-//! `#[near_bindgen]`.
+//! `#[near]`.
 
 use near_sdk::{env, GasWeight, NearToken, Promise};
 

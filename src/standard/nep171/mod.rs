@@ -41,6 +41,7 @@ use std::error::Error;
 
 use near_sdk::{
     borsh::BorshSerialize,
+    near,
     serde::{Deserialize, Serialize},
     AccountId, BorshStorageKey, Gas,
 };
@@ -183,9 +184,8 @@ pub trait Nep171Controller {
 }
 
 /// Authorization for a transfer.
-#[derive(Serialize, BorshSerialize, PartialEq, Eq, Clone, Debug, Hash)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(PartialEq, Eq, Clone, Debug, Hash)]
+#[near(serializers = [borsh, json])]
 pub enum Nep171TransferAuthorization {
     /// The sender is the owner of the token.
     Owner,

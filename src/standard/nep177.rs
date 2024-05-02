@@ -3,13 +3,7 @@
 //! Reference: <https://github.com/near/NEPs/blob/master/neps/nep-0177.md>
 use std::error::Error;
 
-use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env,
-    json_types::U64,
-    serde::*,
-    AccountId, BorshStorageKey,
-};
+use near_sdk::{borsh::BorshSerialize, env, json_types::U64, near, AccountId, BorshStorageKey};
 use thiserror::Error;
 
 use crate::{
@@ -31,20 +25,8 @@ pub use ext::*;
 const CONTRACT_METADATA_NOT_INITIALIZED_ERROR: &str = "Contract metadata not initialized";
 
 /// Non-fungible token contract metadata.
-#[derive(
-    Serialize,
-    Deserialize,
-    BorshSerialize,
-    BorshDeserialize,
-    Clone,
-    Debug,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[near(serializers = [borsh, json])]
 pub struct ContractMetadata {
     /// The metadata specification version. Essentially a version like "nft-2.0.0", replacing "2.0.0" with the implemented version of NEP-177.
     pub spec: String,
@@ -82,21 +64,8 @@ impl ContractMetadata {
 }
 
 /// Non-fungible token metadata.
-#[derive(
-    Serialize,
-    Deserialize,
-    BorshSerialize,
-    BorshDeserialize,
-    Clone,
-    Debug,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Default,
-)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[near(serializers = [borsh, json])]
 pub struct TokenMetadata {
     /// This token's title, e.g. "Arch Nemesis: Mail Carrier" or "Parcel #5055".
     pub title: Option<String>,

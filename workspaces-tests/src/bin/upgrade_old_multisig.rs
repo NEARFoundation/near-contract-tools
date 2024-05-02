@@ -1,6 +1,6 @@
 workspaces_tests::predicate!();
 
-use near_sdk::{env, json_types::Base64VecU8, near, BorshStorageKey};
+use near_sdk::{env, json_types::Base64VecU8, near, BorshStorageKey, PanicOnDefault};
 use near_sdk_contract_tools::{
     approval::{self, ApprovalManager},
     owner::*,
@@ -30,7 +30,7 @@ impl approval::Action<Contract> for ContractAction {
     }
 }
 
-#[derive(Owner, Debug, Clone, Rbac, Upgrade, SimpleMultisig)]
+#[derive(Owner, Debug, Clone, Rbac, Upgrade, SimpleMultisig, PanicOnDefault)]
 #[rbac(roles = "Role")]
 #[simple_multisig(role = "Role::Multisig", action = "ContractAction")]
 #[upgrade(serializer = "borsh", hook = "owner")]

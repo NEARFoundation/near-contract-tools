@@ -3,12 +3,7 @@
 
 use std::marker::PhantomData;
 
-use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env,
-    serde::{Deserialize, Serialize},
-    AccountId,
-};
+use near_sdk::{env, near, AccountId};
 use thiserror::Error;
 
 use super::{ActionRequest, ApprovalConfiguration};
@@ -24,9 +19,8 @@ pub trait AccountAuthorizer {
 }
 
 /// M (threshold) of N approval scheme
-#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Clone, Debug)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Clone, Debug)]
+#[near(serializers = [borsh, json])]
 pub struct Configuration<Au: AccountAuthorizer> {
     /// How many approvals are required?
     pub threshold: u8,
@@ -63,9 +57,8 @@ impl<Au: AccountAuthorizer> Configuration<Au> {
 }
 
 /// Approval state for simple multisig
-#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Debug)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Clone, Debug)]
+#[near(serializers = [borsh, json])]
 pub struct ApprovalState {
     /// List of accounts that have approved an action thus far
     pub approved_by: Vec<AccountId>,
@@ -211,10 +204,7 @@ pub mod macro_types {
 #[cfg(test)]
 mod tests {
     use near_sdk::{
-        borsh::{BorshDeserialize, BorshSerialize},
-        env, near_bindgen,
-        test_utils::VMContextBuilder,
-        testing_env, AccountId, BorshStorageKey,
+        env, near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey, PanicOnDefault,
     };
     use thiserror::Error;
 
@@ -228,8 +218,7 @@ mod tests {
         Rbac,
     };
 
-    #[derive(BorshSerialize, BorshDeserialize)]
-    #[borsh(crate = "near_sdk::borsh")]
+    #[near]
     enum Action {
         SayHello,
         SayGoodbye,
@@ -246,16 +235,15 @@ mod tests {
         }
     }
 
-    #[derive(BorshSerialize, BorshStorageKey)]
-    #[borsh(crate = "near_sdk::borsh")]
+    #[derive(BorshStorageKey)]
+    #[near]
     enum Role {
         Multisig,
     }
 
-    #[derive(BorshSerialize, BorshDeserialize, Rbac, Debug)]
-    #[borsh(crate = "near_sdk::borsh")]
+    #[derive(Rbac, Debug, PanicOnDefault)]
     #[rbac(roles = "Role", crate = "crate")]
-    #[near_bindgen]
+    #[near(contract_state)]
     struct Contract {}
 
     impl ApprovalManagerInternal<Action, ApprovalState, Configuration<Self>> for Contract {
@@ -280,7 +268,7 @@ mod tests {
         }
     }
 
-    #[near_bindgen]
+    #[near]
     impl Contract {
         #[init]
         pub fn new() -> Self {

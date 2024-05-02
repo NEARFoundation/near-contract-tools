@@ -1,11 +1,11 @@
-use near_sdk::{json_types::Base64VecU8, near_bindgen};
+use near_sdk::{json_types::Base64VecU8, near, PanicOnDefault};
 use near_sdk_contract_tools::ft::*;
 
-#[derive(FungibleToken)]
-#[near_bindgen]
+#[derive(FungibleToken, PanicOnDefault)]
+#[near(contract_state)]
 struct MyFungibleTokenContract {}
 
-#[near_bindgen]
+#[near]
 impl MyFungibleTokenContract {
     #[init]
     pub fn new() -> Self {

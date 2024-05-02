@@ -1,6 +1,6 @@
 use near_sdk::{
-    borsh::BorshSerialize, json_types::U64, near_bindgen, test_utils::VMContextBuilder,
-    testing_env, AccountId, BorshStorageKey, NearToken, VMContext,
+    json_types::U64, near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey,
+    NearToken, PanicOnDefault, VMContext,
 };
 use near_sdk_contract_tools::{
     escrow::{Escrow, EscrowInternal},
@@ -10,8 +10,8 @@ use near_sdk_contract_tools::{
 const ID: U64 = U64(1);
 const IS_NOT_READY: bool = false;
 
-#[derive(BorshSerialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(BorshStorageKey)]
+#[near]
 enum StorageKey {
     MyStorageKey,
 }
@@ -20,18 +20,18 @@ mod ensure_default {
     use super::*;
 
     // Ensure compilation of default state type.
-    #[derive(Escrow)]
+    #[derive(Escrow, PanicOnDefault)]
     #[escrow(id = "U64")]
-    #[near_bindgen]
+    #[near(contract_state)]
     struct StatelessLock {}
 }
 
-#[derive(Escrow)]
+#[derive(Escrow, PanicOnDefault)]
 #[escrow(id = "U64", state = "bool", storage_key = "StorageKey::MyStorageKey")]
-#[near_bindgen]
+#[near(contract_state)]
 struct IsReadyLockableContract {}
 
-#[near_bindgen]
+#[near]
 impl IsReadyLockableContract {
     #[init]
     pub fn new() -> Self {

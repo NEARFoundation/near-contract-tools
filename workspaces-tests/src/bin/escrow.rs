@@ -1,6 +1,6 @@
 workspaces_tests::predicate!();
 
-use near_sdk::{env, near, AccountId};
+use near_sdk::{env, near, AccountId, PanicOnDefault};
 use near_sdk_contract_tools::{escrow::Escrow, Escrow};
 
 #[derive(Clone)]
@@ -33,7 +33,7 @@ impl From<(PrimaryColour, PrimaryColour)> for SecondaryColour {
     }
 }
 
-#[derive(Escrow)]
+#[derive(Escrow, PanicOnDefault)]
 #[escrow(id = "PrimaryColour", state = "AccountId")]
 #[near(contract_state)]
 pub struct Contract {}

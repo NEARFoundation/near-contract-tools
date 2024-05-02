@@ -1,16 +1,9 @@
-use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env, log, near_bindgen,
-    store::LookupMap,
-    AccountId, NearToken, PanicOnDefault,
-};
+use near_sdk::{env, log, near, store::LookupMap, AccountId, NearToken, PanicOnDefault};
 use near_sdk_contract_tools::{hook::Hook, standard::nep145::*, Nep145};
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(PanicOnDefault, Nep145)]
+#[derive(Nep145, PanicOnDefault)]
 #[nep145(force_unregister_hook = "ForceUnregisterHook")]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct Contract {
     pub storage: LookupMap<AccountId, Vec<u64>>,
 }
@@ -30,7 +23,7 @@ impl Hook<Contract, Nep145ForceUnregister<'_>> for ForceUnregisterHook {
     }
 }
 
-#[near_bindgen]
+#[near]
 impl Contract {
     #[init]
     pub fn new() -> Self {

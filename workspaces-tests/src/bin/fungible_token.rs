@@ -5,10 +5,11 @@ use near_sdk::{
     json_types::{Base64VecU8, U128},
     near,
     store::Vector,
+    PanicOnDefault,
 };
 use near_sdk_contract_tools::ft::*;
 
-#[derive(FungibleToken)]
+#[derive(FungibleToken, PanicOnDefault)]
 #[near(contract_state)]
 pub struct Contract {
     blobs: Vector<Vec<u8>>,

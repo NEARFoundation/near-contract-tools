@@ -42,7 +42,7 @@ pub fn expand(meta: Nep148Meta) -> Result<TokenStream, darling::Error> {
             #root
         }
 
-        #[#near_sdk::near_bindgen]
+        #[#near_sdk::near]
         impl #imp #me::standard::nep148::Nep148 for #ident #ty #wher {
             fn ft_metadata(&self) -> #me::standard::nep148::FungibleTokenMetadata {
                 #me::standard::nep148::Nep148Controller::get_metadata(self)

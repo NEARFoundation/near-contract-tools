@@ -1,20 +1,16 @@
-use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env, near_bindgen,
-};
+use near_sdk::{env, near, PanicOnDefault};
 use near_sdk_contract_tools::{migrate::MigrateHook, Migrate};
 
 mod old {
     use super::*;
 
-    #[derive(BorshSerialize, BorshDeserialize, Debug)]
-    #[borsh(crate = "near_sdk::borsh")]
-    #[near_bindgen]
+    #[derive(Debug, PanicOnDefault)]
+    #[near(contract_state)]
     pub struct Old {
         pub foo: u64,
     }
 
-    #[near_bindgen]
+    #[near]
     impl Old {
         #[init]
         pub fn new(foo: u64) -> Self {
@@ -23,10 +19,9 @@ mod old {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Migrate)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Migrate, PanicOnDefault)]
 #[migrate(from = "old::Old")]
-#[near_bindgen]
+#[near(contract_state)]
 struct MyContract {
     pub bar: u64,
 }
@@ -41,7 +36,7 @@ impl MigrateHook for MyContract {
 fn default_from() {
     let old = old::Old::new(99);
 
-    // This is done automatically in real #[near_bindgen] WASM contracts
+    // This is done automatically in real #[near] WASM contracts
     env::state_write(&old);
 
     assert_eq!(old.foo, 99);

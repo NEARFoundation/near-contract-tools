@@ -44,7 +44,7 @@ pub fn expand(meta: Nep177Meta) -> Result<TokenStream, darling::Error> {
             #root
         }
 
-        #[#near_sdk::near_bindgen]
+        #[#near_sdk::near]
         impl #imp #me::standard::nep177::Nep177 for #ident #ty #wher {
             fn nft_metadata(&self) -> #me::standard::nep177::ContractMetadata {
                 #me::standard::nep177::Nep177Controller::contract_metadata(self)

@@ -82,7 +82,7 @@ pub fn derive_nep297(input: TokenStream) -> TokenStream {
 }
 
 /// Creates a managed, lazily-loaded `Owner` implementation for the targeted
-/// `#[near_bindgen]` struct.
+/// `#[near(contract_state)]` struct.
 ///
 /// The storage key prefix for the fields can be optionally specified (default:
 /// `"~o"`) using `#[owner(storage_key = "<expression>")]`.
@@ -282,7 +282,7 @@ pub fn derive_upgrade(input: TokenStream) -> TokenStream {
 }
 
 /// Creates a managed, lazily-loaded `Escrow` implementation for the targeted
-/// `#[near_bindgen]` struct.
+/// `#[near(contract_state)]` struct.
 ///
 /// Fields include:
 ///  - `id` - the type required for id, must be `borsh::BorshSerialize` & `serde::Serialize`, for events

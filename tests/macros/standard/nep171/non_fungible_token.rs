@@ -1,5 +1,4 @@
-use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
-use near_sdk::{env, near_bindgen, PanicOnDefault};
+use near_sdk::{env, near, PanicOnDefault};
 use near_sdk_contract_tools::{
     nft::*,
     owner::Owner,
@@ -7,16 +6,14 @@ use near_sdk_contract_tools::{
     Owner, Pause,
 };
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(PanicOnDefault, NonFungibleToken, Pause, Owner)]
+#[derive(NonFungibleToken, Pause, Owner, PanicOnDefault)]
 #[non_fungible_token(transfer_hook = "PausableHook")]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct Contract {
     next_token_id: u32,
 }
 
-#[near_bindgen]
+#[near]
 impl Contract {
     #[init]
     pub fn new() -> Self {

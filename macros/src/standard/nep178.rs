@@ -63,7 +63,7 @@ pub fn expand(meta: Nep178Meta) -> Result<TokenStream, darling::Error> {
             #root
         }
 
-        #[#near_sdk::near_bindgen]
+        #[#near_sdk::near]
         impl #imp #me::standard::nep178::Nep178 for #ident #ty #wher {
             #[payable]
             fn nft_approve(

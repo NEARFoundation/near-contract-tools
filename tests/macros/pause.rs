@@ -1,11 +1,11 @@
-use near_sdk::{borsh::BorshSerialize, near_bindgen, BorshStorageKey};
+use near_sdk::{near, BorshStorageKey, PanicOnDefault};
 use near_sdk_contract_tools::{
     pause::{Pause, PauseExternal},
     Pause,
 };
 
-#[derive(BorshSerialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(BorshStorageKey)]
+#[near]
 enum StorageKey {
     Pause,
 }
@@ -13,19 +13,19 @@ enum StorageKey {
 mod implicit_key {
     use super::*;
 
-    #[derive(Pause)]
-    #[near_bindgen]
+    #[derive(Pause, PanicOnDefault)]
+    #[near(contract_state)]
     struct ContractImplicitKey {}
 }
 
-#[derive(Pause)]
+#[derive(Pause, PanicOnDefault)]
 #[pause(storage_key = "StorageKey::Pause")]
-#[near_bindgen]
+#[near(contract_state)]
 struct Contract {
     pub value: u32,
 }
 
-#[near_bindgen]
+#[near]
 impl Contract {
     pub fn only_when_unpaused(&mut self, value: u32) {
         Self::require_unpaused();

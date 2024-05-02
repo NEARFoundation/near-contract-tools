@@ -1,9 +1,9 @@
 workspaces_tests::predicate!();
 
-use near_sdk::{env, log, near};
+use near_sdk::{env, log, near, PanicOnDefault};
 use near_sdk_contract_tools::{hook::Hook, nft::*};
 
-#[derive(NonFungibleToken)]
+#[derive(NonFungibleToken, PanicOnDefault)]
 #[near(contract_state)]
 pub struct Contract {}
 

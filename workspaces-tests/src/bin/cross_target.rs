@@ -1,7 +1,8 @@
 workspaces_tests::predicate!();
 
-use near_sdk::{env, near, require, AccountId};
+use near_sdk::{env, near, require, AccountId, PanicOnDefault};
 
+#[derive(PanicOnDefault)]
 #[near(contract_state)]
 pub struct Contract {
     owner_id: AccountId,

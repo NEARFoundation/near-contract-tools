@@ -1,9 +1,6 @@
 #![allow(dead_code)]
 
-use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env, near_bindgen, store, AccountId,
-};
+use near_sdk::{env, near, store, AccountId, PanicOnDefault};
 use near_sdk_contract_tools::{hook::Hook, nft::*};
 
 mod hooks;
@@ -11,9 +8,8 @@ mod manual_integration;
 mod no_hooks;
 mod non_fungible_token;
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[near]
 struct TokenRecord {
     owner_id: AccountId,
     token_id: TokenId,
@@ -33,10 +29,8 @@ mod full_no_hooks {
 
     use super::*;
 
-    #[derive(BorshSerialize, BorshDeserialize)]
-    #[borsh(crate = "near_sdk::borsh")]
-    #[derive(NonFungibleToken)]
-    #[near_bindgen]
+    #[derive(NonFungibleToken, PanicOnDefault)]
+    #[near(contract_state)]
     struct NonFungibleTokenNoHooks {
         pub before_nft_transfer_balance_record: store::Vector<Option<TokenRecord>>,
         pub after_nft_transfer_balance_record: store::Vector<Option<TokenRecord>>,
@@ -63,11 +57,9 @@ mod full_no_hooks {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(Nep171)]
+#[derive(Nep171, PanicOnDefault)]
 #[nep171(transfer_hook = "Self")]
-#[near_bindgen]
+#[near(contract_state)]
 struct NonFungibleToken {
     pub before_nft_transfer_balance_record: store::Vector<Option<TokenRecord>>,
     pub after_nft_transfer_balance_record: store::Vector<Option<TokenRecord>>,
@@ -92,7 +84,7 @@ impl Hook<NonFungibleToken, Nep171Transfer<'_>> for NonFungibleToken {
     }
 }
 
-#[near_bindgen]
+#[near]
 impl NonFungibleToken {
     #[init]
     pub fn new() -> Self {

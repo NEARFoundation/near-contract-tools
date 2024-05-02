@@ -62,16 +62,16 @@ pub trait PauseInternal {
 /// # Examples
 ///
 /// ```
-/// use near_sdk::near_bindgen;
+/// use near_sdk::{near, PanicOnDefault};
 /// use near_sdk_contract_tools::{pause::Pause, Pause};
 ///
-/// #[derive(Pause)]
-/// #[near_bindgen]
+/// #[derive(Pause, PanicOnDefault)]
+/// #[near(contract_state)]
 /// struct Contract {
 ///     // ...
 /// }
 ///
-/// #[near_bindgen]
+/// #[near]
 /// impl Contract {
 ///     pub fn only_when_unpaused(&self) {
 ///         Self::require_unpaused();

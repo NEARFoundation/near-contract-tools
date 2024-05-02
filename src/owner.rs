@@ -31,7 +31,7 @@
 //! * (ERR) The external functions exposed in [`OwnerExternal`] call their
 //!   respective [`Owner`] methods and expect the same invariants.
 
-use near_sdk::{borsh::BorshSerialize, env, require, AccountId, BorshStorageKey};
+use near_sdk::{env, near, require, AccountId, BorshStorageKey};
 use near_sdk_contract_tools_macros::event;
 
 use crate::{slot::Slot, standard::nep297::Event, DefaultStorageKey};
@@ -67,9 +67,8 @@ pub enum OwnerEvent {
     },
 }
 
-#[derive(BorshSerialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(Debug, Clone)]
+#[derive(BorshStorageKey, Debug, Clone)]
+#[near]
 enum StorageKey {
     IsInitialized,
     Owner,
@@ -123,14 +122,14 @@ pub trait Owner {
     /// # Examples
     ///
     /// ```
-    /// use near_sdk::{AccountId, near_bindgen};
+    /// use near_sdk::{AccountId, near, PanicOnDefault};
     /// use near_sdk_contract_tools::{Owner, owner::Owner};
     ///
-    /// #[derive(Owner)]
-    /// #[near_bindgen]
+    /// #[derive(Owner, PanicOnDefault)]
+    /// #[near(contract_state)]
     /// struct Contract {}
     ///
-    /// #[near_bindgen]
+    /// #[near]
     /// impl Contract {
     ///     #[init]
     ///     pub fn new(owner_id: AccountId) -> Self {
@@ -149,14 +148,14 @@ pub trait Owner {
     /// # Examples
     ///
     /// ```
-    /// use near_sdk::{AccountId, near_bindgen};
+    /// use near_sdk::{AccountId, near, PanicOnDefault};
     /// use near_sdk_contract_tools::{Owner, owner::Owner};
     ///
-    /// #[derive(Owner)]
-    /// #[near_bindgen]
+    /// #[derive(Owner, PanicOnDefault)]
+    /// #[near(contract_state)]
     /// struct Contract {}
     ///
-    /// #[near_bindgen]
+    /// #[near]
     /// impl Contract {
     ///     pub fn owner_only(&self) {
     ///         Self::require_owner();
@@ -352,19 +351,19 @@ pub use ext::*;
 
 #[cfg(test)]
 mod tests {
-    use near_sdk::{near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId, NearToken};
+    use near_sdk::{near, test_utils::VMContextBuilder, testing_env, AccountId, NearToken, PanicOnDefault};
 
     use crate::{
         owner::{Owner, OwnerExternal},
         Owner,
     };
 
-    #[derive(Owner)]
+    #[derive(Owner, PanicOnDefault)]
     #[owner(crate = "crate")]
-    #[near_bindgen]
+    #[near(contract_state)]
     struct Contract {}
 
-    #[near_bindgen]
+    #[near]
     impl Contract {
         #[init]
         pub fn new(owner_id: AccountId) -> Self {

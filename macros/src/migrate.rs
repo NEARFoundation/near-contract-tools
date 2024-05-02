@@ -42,7 +42,7 @@ pub fn expand(meta: MigrateMeta) -> Result<TokenStream, darling::Error> {
             type NewSchema = #to;
         }
 
-        #[#near_sdk::near_bindgen]
+        #[#near_sdk::near]
         impl #imp #ident #ty #wh {
             #[init(ignore_state)]
             pub fn migrate() -> Self {

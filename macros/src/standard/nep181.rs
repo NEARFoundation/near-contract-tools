@@ -44,7 +44,7 @@ pub fn expand(meta: Nep181Meta) -> Result<TokenStream, darling::Error> {
             #root
         }
 
-        #[#near_sdk::near_bindgen]
+        #[#near_sdk::near]
         impl #imp #me::standard::nep181::Nep181 for #ident #ty #wher {
             fn nft_total_supply(&self) -> #near_sdk::json_types::U128 {
                 #me::standard::nep181::Nep181Controller::total_enumerated_tokens(self)

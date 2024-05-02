@@ -6,13 +6,13 @@ use std::marker::PhantomData;
 
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    env, IntoStorageKey,
+    env, near, IntoStorageKey,
 };
 
 use crate::utils::prefix_key;
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Clone, Debug)]
+#[near]
 /// A storage slot, composed of a storage location (key) and a data type
 pub struct Slot<T> {
     /// The storage key this slot controls

@@ -1,6 +1,6 @@
 workspaces_tests::predicate!();
 
-use near_sdk::near;
+use near_sdk::{near, PanicOnDefault};
 use near_sdk_contract_tools::{migrate::*, Migrate};
 
 #[near]
@@ -8,7 +8,7 @@ pub struct ContractOld {
     pub foo: u32,
 }
 
-#[derive(Migrate)]
+#[derive(Migrate, PanicOnDefault)]
 #[migrate(from = "ContractOld")]
 #[near(contract_state)]
 pub struct ContractNew {

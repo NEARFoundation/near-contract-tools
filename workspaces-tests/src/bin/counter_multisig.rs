@@ -1,6 +1,6 @@
 workspaces_tests::predicate!();
 
-use near_sdk::{env, near, BorshStorageKey};
+use near_sdk::{env, near, BorshStorageKey, PanicOnDefault};
 use near_sdk_contract_tools::{
     approval::{simple_multisig::Configuration, *},
     rbac::Rbac,
@@ -15,7 +15,7 @@ pub enum Role {
     Member,
 }
 
-#[near]
+#[near(serializers = [borsh, json])]
 pub enum CounterAction {
     Increment,
     Decrement,
@@ -42,7 +42,7 @@ impl Action<Contract> for CounterAction {
     }
 }
 
-#[derive(Rbac, SimpleMultisig)]
+#[derive(Rbac, SimpleMultisig, PanicOnDefault)]
 #[simple_multisig(action = "CounterAction", role = "Role::Member")]
 #[rbac(roles = "Role")]
 #[near(contract_state)]

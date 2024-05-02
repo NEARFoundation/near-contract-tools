@@ -1,9 +1,9 @@
 workspaces_tests::predicate!();
 
-use near_sdk::{env, near};
+use near_sdk::{env, near, PanicOnDefault};
 use near_sdk_contract_tools::{owner::*, upgrade::PostUpgrade, Owner};
 
-#[derive(Owner)]
+#[derive(Owner, PanicOnDefault)]
 #[near(contract_state)]
 pub struct ContractOld {
     pub foo: u32,

@@ -166,7 +166,7 @@ mod tests {
     use super::Escrow;
     use crate::escrow::EscrowInternal;
     use near_sdk::{
-        near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId, NearToken, VMContext,
+        near, test_utils::VMContextBuilder, testing_env, AccountId, NearToken, PanicOnDefault, VMContext
     };
     use near_sdk_contract_tools_macros::Escrow;
 
@@ -174,12 +174,12 @@ mod tests {
     const IS_NOT_READY: bool = false;
     const ONE_YOCTO: u128 = 1;
 
-    #[derive(Escrow)]
+    #[derive(Escrow, PanicOnDefault)]
     #[escrow(id = "u64", state = "bool", crate = "crate")]
-    #[near_bindgen]
+    #[near(contract_state)]
     struct Contract {}
 
-    #[near_bindgen]
+    #[near]
     impl Contract {
         #[init]
         pub fn new() -> Self {

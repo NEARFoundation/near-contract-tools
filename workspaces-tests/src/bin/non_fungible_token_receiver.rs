@@ -1,8 +1,9 @@
 workspaces_tests::predicate!();
 
-use near_sdk::{env, log, near, AccountId, NearToken, PromiseOrValue};
-use near_sdk_contract_tools::standard::nep171::{ext_nep171, *};
+use near_sdk::{env, log, near, AccountId, NearToken, PanicOnDefault, PromiseOrValue};
+use near_sdk_contract_tools::standard::nep171::*;
 
+#[derive(PanicOnDefault)]
 #[near(contract_state)]
 pub struct Contract {}
 
