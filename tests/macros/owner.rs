@@ -1,4 +1,7 @@
-use near_sdk::{env, near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey, PanicOnDefault};
+use near_sdk::{
+    env, near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey,
+    PanicOnDefault,
+};
 use near_sdk_contract_tools::{
     owner::{Owner, OwnerExternal},
     Owner,

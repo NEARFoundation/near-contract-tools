@@ -335,7 +335,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use near_sdk::{near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey, PanicOnDefault};
+    use near_sdk::{
+        near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey, PanicOnDefault,
+    };
     use near_sdk_contract_tools_macros::Rbac;
 
     use crate::{rbac::Rbac, slot::Slot};

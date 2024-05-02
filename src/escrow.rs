@@ -166,7 +166,8 @@ mod tests {
     use super::Escrow;
     use crate::escrow::EscrowInternal;
     use near_sdk::{
-        near, test_utils::VMContextBuilder, testing_env, AccountId, NearToken, PanicOnDefault, VMContext
+        near, test_utils::VMContextBuilder, testing_env, AccountId, NearToken, PanicOnDefault,
+        VMContext,
     };
     use near_sdk_contract_tools_macros::Escrow;
 

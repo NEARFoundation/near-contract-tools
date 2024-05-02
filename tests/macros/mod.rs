@@ -499,10 +499,10 @@ mod pausable_fungible_token {
 
 #[cfg(test)]
 mod owned_fungible_token {
-    use near_sdk::{NearToken, PanicOnDefault};
     use near_sdk::{
         env, json_types::U128, near, test_utils::VMContextBuilder, testing_env, AccountId,
     };
+    use near_sdk::{NearToken, PanicOnDefault};
     use near_sdk_contract_tools::{
         ft::*,
         owner::{hooks::OnlyOwner, *},

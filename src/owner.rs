@@ -351,7 +351,9 @@ pub use ext::*;
 
 #[cfg(test)]
 mod tests {
-    use near_sdk::{near, test_utils::VMContextBuilder, testing_env, AccountId, NearToken, PanicOnDefault};
+    use near_sdk::{
+        near, test_utils::VMContextBuilder, testing_env, AccountId, NearToken, PanicOnDefault,
+    };
 
     use crate::{
         owner::{Owner, OwnerExternal},

@@ -204,7 +204,8 @@ pub mod macro_types {
 #[cfg(test)]
 mod tests {
     use near_sdk::{
-        env, near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey, PanicOnDefault,
+        env, near, test_utils::VMContextBuilder, testing_env, AccountId, BorshStorageKey,
+        PanicOnDefault,
     };
     use thiserror::Error;
 
