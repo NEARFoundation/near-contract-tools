@@ -1,22 +1,16 @@
-#![allow(missing_docs)]
-
 workspaces_tests::predicate!();
 
-use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env, near_bindgen, PanicOnDefault,
-};
+use near_sdk::{env, near};
 use near_sdk_contract_tools::{owner::*, Owner, Upgrade};
 
-#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, Owner, Upgrade)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Owner, Upgrade)]
 #[upgrade(serializer = "borsh", hook = "owner")]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct ContractOld {
     pub foo: u32,
 }
 
-#[near_bindgen]
+#[near]
 impl ContractOld {
     #[init]
     pub fn new() -> Self {

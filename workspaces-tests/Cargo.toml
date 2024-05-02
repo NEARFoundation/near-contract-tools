@@ -62,6 +62,12 @@ name = "upgrade_old_multisig"
 [[bin]]
 name = "upgrade_old_raw"
 
+[lints.clippy]
+# pedantic = "warn"
+new-without-default = "allow"
+# must-use-candidate = "allow"
+# missing-panics-doc = "allow"
+
 [dependencies]
 near-sdk = { workspace = true, default-features = false }
 near-sdk-contract-tools = { path = "../", default-features = false, features = [

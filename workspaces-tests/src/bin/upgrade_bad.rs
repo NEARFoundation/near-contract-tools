@@ -1,20 +1,13 @@
-#![allow(missing_docs)]
-
 workspaces_tests::predicate!();
 
-use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    near_bindgen, PanicOnDefault,
-};
+use near_sdk::near;
 
-#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
-#[borsh(crate = "near_sdk::borsh")]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct ContractBad {
     pub foo: u32,
 }
 
-#[near_bindgen]
+#[near]
 impl ContractBad {
     #[init]
     pub fn new() -> Self {

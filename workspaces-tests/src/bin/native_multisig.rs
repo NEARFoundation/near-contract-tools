@@ -1,9 +1,6 @@
-#![allow(missing_docs)]
-
 workspaces_tests::predicate!();
 
-use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
-use near_sdk::{env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault, Promise};
+use near_sdk::{env, near, AccountId, BorshStorageKey, Promise};
 use near_sdk_contract_tools::{
     approval::{
         native_transaction_action::{self, NativeTransactionAction},
@@ -14,20 +11,19 @@ use near_sdk_contract_tools::{
     Rbac, SimpleMultisig,
 };
 
-#[derive(BorshSerialize, BorshStorageKey, Clone, Debug)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(BorshStorageKey, Clone, Debug)]
+#[near]
 pub enum Role {
     Multisig,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, Rbac, SimpleMultisig)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Rbac, SimpleMultisig)]
 #[simple_multisig(action = "NativeTransactionAction", role = "Role::Multisig")]
 #[rbac(roles = "Role")]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct Contract {}
 
-#[near_bindgen]
+#[near]
 impl Contract {
     const APPROVAL_THRESHOLD: u8 = 2;
     const VALIDITY_PERIOD: u64 = 1_000_000 * 1_000 * 60 * 60 * 24 * 7;

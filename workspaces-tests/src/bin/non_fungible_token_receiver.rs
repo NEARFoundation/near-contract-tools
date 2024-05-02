@@ -1,20 +1,12 @@
-#![allow(missing_docs)]
-
 workspaces_tests::predicate!();
 
-use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env, log, near_bindgen, AccountId, NearToken, PanicOnDefault, PromiseOrValue,
-};
+use near_sdk::{env, log, near, AccountId, NearToken, PromiseOrValue};
 use near_sdk_contract_tools::standard::nep171::{ext_nep171, *};
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(PanicOnDefault)]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct Contract {}
 
-#[near_bindgen]
+#[near]
 impl Nep171Receiver for Contract {
     fn nft_on_transfer(
         &mut self,
@@ -45,7 +37,7 @@ impl Nep171Receiver for Contract {
     }
 }
 
-#[near_bindgen]
+#[near]
 impl Contract {
     #[init]
     pub fn new() -> Self {

@@ -1,20 +1,13 @@
-#![allow(missing_docs)]
-
 workspaces_tests::predicate!();
 
 use std::str::FromStr;
 
 use near_sdk_contract_tools::{rbac::Rbac, Rbac};
 
-use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env, near_bindgen,
-    serde::Serialize,
-    AccountId, BorshStorageKey, PanicOnDefault,
-};
+use near_sdk::{env, near, AccountId, BorshStorageKey};
 
-#[derive(BorshSerialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(BorshStorageKey)]
+#[near]
 pub enum Role {
     Alpha,
     Beta,
@@ -36,11 +29,9 @@ impl FromStr for Role {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, PanicOnDefault, Rbac)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Rbac)]
 #[rbac(roles = "Role")]
-#[near_bindgen]
+#[near(contract_state, serializers = [borsh, json])]
 pub struct Contract {
     pub alpha: u32,
     pub beta: u32,
@@ -48,7 +39,7 @@ pub struct Contract {
     pub delta: u32,
 }
 
-#[near_bindgen]
+#[near]
 impl Contract {
     #[init]
     pub fn new() -> Self {

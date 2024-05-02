@@ -1,14 +1,10 @@
-#![allow(missing_docs)]
-
 workspaces_tests::predicate!();
 
-use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
-use near_sdk::{env, log, near_bindgen, PanicOnDefault};
+use near_sdk::{env, log, near};
 use near_sdk_contract_tools::{hook::Hook, nft::*};
 
-#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, NonFungibleToken)]
-#[borsh(crate = "near_sdk::borsh")]
-#[near_bindgen]
+#[derive(NonFungibleToken)]
+#[near(contract_state)]
 pub struct Contract {}
 
 impl Hook<Contract, Nep178Approve<'_>> for Contract {
@@ -63,7 +59,7 @@ impl Hook<Contract, Nep171Transfer<'_>> for Contract {
     }
 }
 
-#[near_sdk::near_bindgen]
+#[near]
 impl Contract {
     #[init]
     pub fn new() -> Self {
@@ -84,20 +80,9 @@ impl Contract {
             self.mint_with_metadata(
                 token_id.clone(),
                 receiver.clone(),
-                TokenMetadata {
-                    title: Some(token_id),
-                    description: Some("description".to_string()),
-                    media: None,
-                    media_hash: None,
-                    copies: None,
-                    issued_at: None,
-                    expires_at: None,
-                    starts_at: None,
-                    updated_at: None,
-                    extra: None,
-                    reference: None,
-                    reference_hash: None,
-                },
+                TokenMetadata::new()
+                    .title(token_id)
+                    .description("description"),
             )
             .unwrap_or_else(|e| env::panic_str(&format!("Failed to mint: {:#?}", e)));
         }

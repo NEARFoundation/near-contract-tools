@@ -1,25 +1,14 @@
-#![allow(missing_docs)]
-
 workspaces_tests::predicate!();
 
-use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env,
-    near_bindgen,
-    store::Vector,
-    NearToken, PanicOnDefault, Promise,
-};
+use near_sdk::{env, near, store::Vector, NearToken, Promise};
 use near_sdk_contract_tools::utils::apply_storage_fee_and_refund;
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(PanicOnDefault)]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct ContractBad {
     pub items: Vector<String>,
 }
 
-#[near_bindgen]
+#[near]
 impl ContractBad {
     #[init]
     pub fn new() -> Self {

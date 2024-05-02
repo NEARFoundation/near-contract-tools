@@ -1,26 +1,20 @@
-#![allow(missing_docs)]
-
 workspaces_tests::predicate!();
 
 use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
     env,
     json_types::{Base64VecU8, U128},
-    near_bindgen,
+    near,
     store::Vector,
-    PanicOnDefault,
 };
 use near_sdk_contract_tools::ft::*;
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(PanicOnDefault, FungibleToken)]
-#[near_bindgen]
+#[derive(FungibleToken)]
+#[near(contract_state)]
 pub struct Contract {
     blobs: Vector<Vec<u8>>,
 }
 
-#[near_bindgen]
+#[near]
 impl Contract {
     #[init]
     pub fn new() -> Self {

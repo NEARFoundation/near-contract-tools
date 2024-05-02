@@ -1,13 +1,8 @@
-#![allow(missing_docs)]
-
 workspaces_tests::predicate!();
 
 use std::fmt::Display;
 
-use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault,
-};
+use near_sdk::{env, near, AccountId, BorshStorageKey};
 use near_sdk_contract_tools::{
     approval::{
         self,
@@ -20,14 +15,13 @@ use near_sdk_contract_tools::{
 };
 use thiserror::Error;
 
-#[derive(BorshSerialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(BorshStorageKey)]
+#[near]
 enum StorageKey {
     SimpleMultisig,
 }
 
-#[derive(BorshSerialize, BorshDeserialize)]
-#[borsh(crate = "near_sdk::borsh")]
+#[near]
 enum MyAction {
     SayHello,
     SayGoodbye,
@@ -44,17 +38,15 @@ impl approval::Action<Contract> for MyAction {
     }
 }
 
-#[derive(BorshSerialize, BorshStorageKey)]
-#[borsh(crate = "near_sdk::borsh")]
-#[derive(Debug, Clone)]
+#[derive(BorshStorageKey, Debug, Clone)]
+#[near]
 pub enum Role {
     Multisig,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, Rbac)]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Rbac)]
 #[rbac(roles = "Role")]
-#[near_bindgen]
+#[near(contract_state)]
 pub struct Contract {}
 
 // This single function implementation completely implements simple multisig on
@@ -92,7 +84,7 @@ impl AccountAuthorizer for Contract {
     }
 }
 
-#[near_bindgen]
+#[near]
 impl Contract {
     const APPROVAL_THRESHOLD: u8 = 2;
     const VALIDITY_PERIOD: u64 = 1000000 * 1000 * 60 * 60 * 24 * 7;

@@ -43,6 +43,12 @@ near-workspaces = "0.10"
 pretty_assertions = "1"
 tokio = "1"
 
+[workspace.lints.clippy]
+# pedantic = "warn"
+
+[workspace.lints.rust]
+missing-docs = "warn"
+
 [dependencies]
 near-sdk = { workspace = true, default-features = false, features = ["legacy"] }
 near-sdk-contract-tools-macros.workspace = true
@@ -68,3 +74,6 @@ lto = true
 opt-level = "z"
 overflow-checks = true
 panic = "abort"
+
+[lints]
+workspace = true
