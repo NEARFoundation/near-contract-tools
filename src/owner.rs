@@ -132,6 +132,7 @@ pub trait Owner {
     ///
     /// #[near_bindgen]
     /// impl Contract {
+    ///     #[init]
     ///     pub fn new(owner_id: AccountId) -> Self {
     ///         let mut contract = Self {};
     ///

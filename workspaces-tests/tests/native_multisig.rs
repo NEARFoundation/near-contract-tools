@@ -1,11 +1,8 @@
 use std::{future::IntoFuture, time::Duration};
 
 use near_crypto::{KeyType, SecretKey};
-use near_sdk::serde_json::json;
-use near_sdk_contract_tools::{
-    approval::native_transaction_action::PromiseAction, compat_gas_to_u64, compat_near_to_u128,
-    COMPAT_ONE_NEAR, COMPAT_ONE_TERAGAS,
-};
+use near_sdk::{serde_json::json, Gas};
+use near_sdk_contract_tools::approval::native_transaction_action::PromiseAction;
 use near_workspaces::{
     result::{ExecutionResult, Value},
     sandbox,
@@ -242,7 +239,7 @@ async fn create_account_transfer_deploy_contract_function_call() {
             "receiver_id": new_account_id_str.clone(),
             "actions": [
                 PromiseAction::CreateAccount,
-                PromiseAction::Transfer { amount: compat_near_to_u128!(COMPAT_ONE_NEAR.saturating_mul(30)).into() },
+                PromiseAction::Transfer { amount: NearToken::from_near(1).saturating_div(30).as_yoctonear().into() },
                 PromiseAction::DeployContract { code: BASIC_ADDER_WASM.to_vec().into() },
                 PromiseAction::FunctionCall { function_name: "new".into(), arguments: vec![].into(), amount: 0.into(), gas: 1_000_000_000_000.into() }
             ],
@@ -485,7 +482,7 @@ async fn transfer() {
             "receiver_id": charlie.id(),
             "actions": [
                 PromiseAction::Transfer {
-                    amount: compat_near_to_u128!(COMPAT_ONE_NEAR.saturating_mul(10)).into(),
+                    amount: NearToken::from_near(10).as_yoctonear().into(),
                 },
             ],
         }))
@@ -550,8 +547,8 @@ async fn transfer() {
 
     // charlie's balance should have increased by exactly 10 NEAR
     assert_eq!(
-        balance_after.saturating_sub(balance_before).as_yoctonear(),
-        compat_near_to_u128!(COMPAT_ONE_NEAR.saturating_mul(10)),
+        balance_after.saturating_sub(balance_before),
+        NearToken::from_near(10),
     );
 }
 
@@ -573,9 +570,7 @@ async fn reflexive_xcc() {
             .to_vec()
             .into(),
         amount: 0.into(),
-        gas: compat_gas_to_u64!(*COMPAT_ONE_TERAGAS)
-            .saturating_mul(50)
-            .into(),
+        gas: Gas::from_tgas(50).as_gas().into(),
     }];
 
     let request_id = alice
@@ -647,9 +642,7 @@ async fn external_xcc() {
             .to_vec()
             .into(),
         amount: 0.into(),
-        gas: compat_gas_to_u64!(*COMPAT_ONE_TERAGAS)
-            .saturating_mul(50)
-            .into(),
+        gas: Gas::from_tgas(50).as_gas().into(),
     }];
 
     let request_id = alice

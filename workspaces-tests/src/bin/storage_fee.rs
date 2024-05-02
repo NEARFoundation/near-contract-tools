@@ -10,7 +10,7 @@ use near_sdk::{
     store::Vector,
     PanicOnDefault, Promise,
 };
-use near_sdk_contract_tools::{compat_near_to_u128, utils::apply_storage_fee_and_refund};
+use near_sdk_contract_tools::utils::apply_storage_fee_and_refund;
 
 #[derive(BorshSerialize, BorshDeserialize)]
 #[borsh(crate = "near_sdk::borsh")]
@@ -30,7 +30,7 @@ impl ContractBad {
     }
 
     pub fn storage_byte_cost(&self) -> U128 {
-        compat_near_to_u128!(env::storage_byte_cost()).into()
+        env::storage_byte_cost().as_yoctonear().into()
     }
 
     #[payable]

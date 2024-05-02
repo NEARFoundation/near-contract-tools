@@ -12,7 +12,6 @@ use near_sdk::{
 };
 use near_sdk_contract_tools::{
     approval::{self, ApprovalManager},
-    compat_derive_serde_borsh,
     owner::*,
     rbac::Rbac,
     Owner, Rbac, SimpleMultisig, Upgrade,
@@ -24,11 +23,11 @@ pub enum Role {
     Multisig,
 }
 
-compat_derive_serde_borsh! {
-    #[derive(Debug, Clone)]
-    pub enum ContractAction {
-        Upgrade { code: Base64VecU8 },
-    }
+#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Debug, Clone)]
+#[serde(crate = "near_sdk::serde")]
+#[borsh(crate = "near_sdk::borsh")]
+pub enum ContractAction {
+    Upgrade { code: Base64VecU8 },
 }
 
 impl approval::Action<Contract> for ContractAction {
@@ -41,9 +40,18 @@ impl approval::Action<Contract> for ContractAction {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    PanicOnDefault,
+    Owner,
+    Debug,
+    Clone,
+    Rbac,
+    Upgrade,
+    SimpleMultisig,
+)]
 #[borsh(crate = "near_sdk::borsh")]
-#[derive(PanicOnDefault, Owner, Debug, Clone, Rbac, Upgrade, SimpleMultisig)]
 #[rbac(roles = "Role")]
 #[simple_multisig(role = "Role::Multisig", action = "ContractAction")]
 #[upgrade(serializer = "borsh", hook = "owner")]

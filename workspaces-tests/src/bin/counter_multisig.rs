@@ -10,7 +10,6 @@ use near_sdk::{
 };
 use near_sdk_contract_tools::{
     approval::{simple_multisig::Configuration, *},
-    compat_derive_serde_borsh,
     rbac::Rbac,
     Rbac, SimpleMultisig,
 };
@@ -23,12 +22,13 @@ pub enum Role {
     Member,
 }
 
-compat_derive_serde_borsh! {[Serialize, BorshSerialize, BorshDeserialize],
-    pub enum CounterAction {
-        Increment,
-        Decrement,
-        Reset,
-    }
+#[derive(Serialize, BorshSerialize, BorshDeserialize)]
+#[serde(crate = "near_sdk::serde")]
+#[borsh(crate = "near_sdk::borsh")]
+pub enum CounterAction {
+    Increment,
+    Decrement,
+    Reset,
 }
 
 impl Action<Contract> for CounterAction {

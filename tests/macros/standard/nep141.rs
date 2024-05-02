@@ -1,11 +1,13 @@
-use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{
-    collections::Vector, env, json_types::U128, log, near_bindgen, test_utils::VMContextBuilder,
-    testing_env, AccountId, PromiseOrValue,
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::Vector,
+    env,
+    json_types::U128,
+    log, near_bindgen,
+    test_utils::VMContextBuilder,
+    testing_env, AccountId, NearToken, PromiseOrValue,
 };
-use near_sdk_contract_tools::{
-    compat_borsh_serialize, compat_yoctonear, hook::Hook, standard::nep141::*, Nep141,
-};
+use near_sdk_contract_tools::{hook::Hook, standard::nep141::*, Nep141};
 
 #[derive(BorshSerialize, BorshDeserialize)]
 #[borsh(crate = "near_sdk::borsh")]
@@ -30,9 +32,7 @@ impl Hook<FungibleToken, Nep141Transfer<'_>> for TransferHook {
         contract.hooks.push(&"before_transfer".to_string());
         let r = f(contract);
         contract.hooks.push(&"after_transfer".to_string());
-        contract
-            .transfers
-            .push(&compat_borsh_serialize!(&args).unwrap());
+        contract.transfers.push(&borsh::to_vec(&args).unwrap());
         let storage_usage_end = env::storage_usage();
         println!("Storage delta: {}", storage_usage_end - storage_usage_start);
         r
@@ -91,7 +91,7 @@ fn nep141_transfer() {
 
     let context = VMContextBuilder::new()
         .predecessor_account_id(alice.clone())
-        .attached_deposit(compat_yoctonear!(1u128))
+        .attached_deposit(NearToken::from_yoctonear(1u128))
         .build();
 
     testing_env!(context);
@@ -101,7 +101,7 @@ fn nep141_transfer() {
     assert_eq!(
         ft.transfers.pop(),
         Some(
-            compat_borsh_serialize!(&Nep141Transfer {
+            borsh::to_vec(&Nep141Transfer {
                 sender_id: &alice,
                 receiver_id: &bob,
                 amount: 50,

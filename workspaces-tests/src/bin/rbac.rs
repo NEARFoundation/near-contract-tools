@@ -4,7 +4,7 @@ workspaces_tests::predicate!();
 
 use std::str::FromStr;
 
-use near_sdk_contract_tools::{compat_derive_serde_borsh, rbac::Rbac, Rbac};
+use near_sdk_contract_tools::{rbac::Rbac, Rbac};
 
 use near_sdk::{
     borsh::{BorshDeserialize, BorshSerialize},
@@ -36,16 +36,16 @@ impl FromStr for Role {
     }
 }
 
-compat_derive_serde_borsh! {[BorshSerialize, BorshDeserialize, Serialize],
-    #[derive(PanicOnDefault, Rbac)]
-    #[rbac(roles = "Role")]
-    #[near_bindgen]
-    pub struct Contract {
-        pub alpha: u32,
-        pub beta: u32,
-        pub gamma: u32,
-        pub delta: u32,
-    }
+#[derive(BorshSerialize, BorshDeserialize, Serialize, PanicOnDefault, Rbac)]
+#[serde(crate = "near_sdk::serde")]
+#[borsh(crate = "near_sdk::borsh")]
+#[rbac(roles = "Role")]
+#[near_bindgen]
+pub struct Contract {
+    pub alpha: u32,
+    pub beta: u32,
+    pub gamma: u32,
+    pub delta: u32,
 }
 
 #[near_bindgen]

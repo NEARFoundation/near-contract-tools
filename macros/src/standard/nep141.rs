@@ -129,13 +129,13 @@ pub fn expand(meta: Nep141Meta) -> Result<TokenStream, darling::Error> {
                 Nep141Controller::transfer(self, &transfer)
                     .unwrap_or_else(|e| #near_sdk::env::panic_str(&e.to_string()));
 
-                let receiver_gas = #me::compat_gas_to_u64!(prepaid_gas)
-                    .checked_sub(#me::compat_gas_to_u64!(GAS_FOR_FT_TRANSFER_CALL))
+                let receiver_gas = prepaid_gas
+                    .checked_sub(GAS_FOR_FT_TRANSFER_CALL)
                     .unwrap_or_else(|| #near_sdk::env::panic_str("Prepaid gas underflow."));
 
                 // Initiating receiver's call and the callback
                 ext_nep141_receiver::ext(transfer.receiver_id.clone())
-                    .with_static_gas(#me::compat_gas!(receiver_gas))
+                    .with_static_gas(receiver_gas)
                     .ft_on_transfer(transfer.sender_id.clone(), transfer.amount.into(), msg.clone())
                     .then(
                         ext_nep141_resolver::ext(#near_sdk::env::current_account_id())

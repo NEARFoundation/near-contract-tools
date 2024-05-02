@@ -81,11 +81,11 @@ pub fn expand(meta: Nep145Meta) -> Result<TokenStream, darling::Error> {
                 let storage_balance = Nep145Controller::deposit_to_storage_account(
                     self,
                     &account_id.unwrap_or_else(|| predecessor.clone()),
-                    U128(#me::compat_near_to_u128!(amount)),
+                    U128(amount.as_yoctonear()),
                 )
                 .unwrap_or_else(|e| env::panic_str(&format!("Storage deposit error: {}", e)));
 
-                if #me::compat_near_to_u128!(refund) > 0 {
+                if !refund.is_zero() {
                     Promise::new(predecessor).transfer(refund);
                 }
 
@@ -113,7 +113,7 @@ pub fn expand(meta: Nep145Meta) -> Result<TokenStream, darling::Error> {
                 let new_balance = Nep145Controller::withdraw_from_storage_account(self, &predecessor, amount)
                     .unwrap_or_else(|e| env::panic_str(&format!("Storage withdraw error: {}", e)));
 
-                Promise::new(predecessor).transfer(#me::compat_yoctonear!(amount.0));
+                Promise::new(predecessor).transfer(#near_sdk::NearToken::from_yoctonear(amount.0));
 
                 new_balance
             }
@@ -143,7 +143,7 @@ pub fn expand(meta: Nep145Meta) -> Result<TokenStream, darling::Error> {
                     }
                 };
 
-                Promise::new(predecessor).transfer(#me::compat_yoctonear!(refund.0));
+                Promise::new(predecessor).transfer(#near_sdk::NearToken::from_yoctonear(refund.0));
                 true
             }
 

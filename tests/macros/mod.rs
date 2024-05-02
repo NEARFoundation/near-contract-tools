@@ -395,12 +395,13 @@ fn integration_fail_cannot_lock_twice() {
 #[cfg(test)]
 mod pausable_fungible_token {
     use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
+    use near_sdk::NearToken;
     use near_sdk::{env, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId};
     use near_sdk_contract_tools::{
         ft::*,
         hook::Hook,
         pause::{hooks::PausableHook, Pause},
-        Pause, COMPAT_ONE_NEAR, COMPAT_ONE_YOCTONEAR,
+        Pause,
     };
 
     #[derive(BorshSerialize, BorshDeserialize)]
@@ -455,13 +456,13 @@ mod pausable_fungible_token {
         let mut c = Contract::new();
 
         let context = VMContextBuilder::new()
-            .attached_deposit(COMPAT_ONE_NEAR.saturating_div(100))
+            .attached_deposit(NearToken::from_near(1).saturating_div(100))
             .predecessor_account_id(alice.clone())
             .build();
         testing_env!(context);
         c.storage_deposit(None, None);
         let context = VMContextBuilder::new()
-            .attached_deposit(COMPAT_ONE_NEAR.saturating_div(100))
+            .attached_deposit(NearToken::from_near(1).saturating_div(100))
             .predecessor_account_id(bob.clone())
             .build();
         testing_env!(context);
@@ -470,7 +471,7 @@ mod pausable_fungible_token {
         c.deposit_unchecked(&alice, 100).unwrap();
 
         let context = VMContextBuilder::new()
-            .attached_deposit(*COMPAT_ONE_YOCTONEAR)
+            .attached_deposit(NearToken::from_yoctonear(1))
             .predecessor_account_id(alice.clone())
             .build();
         testing_env!(context);
@@ -491,7 +492,7 @@ mod pausable_fungible_token {
         c.deposit_unchecked(&alice, 100).unwrap();
 
         let context = VMContextBuilder::new()
-            .attached_deposit(*COMPAT_ONE_YOCTONEAR)
+            .attached_deposit(NearToken::from_yoctonear(1))
             .predecessor_account_id(alice.clone())
             .build();
 
@@ -506,15 +507,15 @@ mod pausable_fungible_token {
 #[cfg(test)]
 mod owned_fungible_token {
     use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
+    use near_sdk::NearToken;
     use near_sdk::{
         env, json_types::U128, near_bindgen, test_utils::VMContextBuilder, testing_env, AccountId,
         PanicOnDefault,
     };
     use near_sdk_contract_tools::{
-        compat_near_to_u128,
         ft::*,
         owner::{hooks::OnlyOwner, *},
-        Owner, COMPAT_ONE_NEAR, COMPAT_ONE_YOCTONEAR,
+        Owner,
     };
 
     #[derive(BorshSerialize, BorshDeserialize)]
@@ -560,10 +561,10 @@ mod owned_fungible_token {
 
         // internal method calls
         contract
-            .deposit_to_storage_account(&alice, compat_near_to_u128!(*COMPAT_ONE_NEAR).into())
+            .deposit_to_storage_account(&alice, NearToken::from_near(1).as_yoctonear().into())
             .unwrap();
         contract
-            .deposit_to_storage_account(&bob, compat_near_to_u128!(*COMPAT_ONE_NEAR).into())
+            .deposit_to_storage_account(&bob, NearToken::from_near(1).as_yoctonear().into())
             .unwrap();
 
         // external; alice is still predecessor
@@ -574,7 +575,7 @@ mod owned_fungible_token {
 
         testing_env!(VMContextBuilder::new()
             .predecessor_account_id(alice.clone())
-            .attached_deposit(*COMPAT_ONE_YOCTONEAR)
+            .attached_deposit(NearToken::from_yoctonear(1u128))
             .build());
         contract.ft_transfer(bob.clone(), U128(10), None);
 
@@ -595,10 +596,10 @@ mod owned_fungible_token {
 
         // internal method calls
         contract
-            .deposit_to_storage_account(&alice, compat_near_to_u128!(*COMPAT_ONE_NEAR).into())
+            .deposit_to_storage_account(&alice, NearToken::from_near(1).as_yoctonear().into())
             .unwrap();
         contract
-            .deposit_to_storage_account(&bob, compat_near_to_u128!(*COMPAT_ONE_NEAR).into())
+            .deposit_to_storage_account(&bob, NearToken::from_near(1).as_yoctonear().into())
             .unwrap();
 
         testing_env!(VMContextBuilder::new().predecessor_account_id(bob).build());
@@ -619,17 +620,17 @@ mod owned_fungible_token {
 
         // internal method calls
         contract
-            .deposit_to_storage_account(&alice, compat_near_to_u128!(*COMPAT_ONE_NEAR).into())
+            .deposit_to_storage_account(&alice, NearToken::from_near(1).as_yoctonear().into())
             .unwrap();
         contract
-            .deposit_to_storage_account(&bob, compat_near_to_u128!(*COMPAT_ONE_NEAR).into())
+            .deposit_to_storage_account(&bob, NearToken::from_near(1).as_yoctonear().into())
             .unwrap();
 
         Nep141Controller::deposit_unchecked(&mut contract, &bob, 100).unwrap();
 
         testing_env!(VMContextBuilder::new()
             .predecessor_account_id(bob)
-            .attached_deposit(*COMPAT_ONE_YOCTONEAR)
+            .attached_deposit(NearToken::from_yoctonear(1))
             .build());
         contract.ft_transfer(alice, U128(10), None);
     }

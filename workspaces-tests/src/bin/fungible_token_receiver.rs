@@ -6,9 +6,9 @@ use near_sdk::{
     borsh::{BorshDeserialize, BorshSerialize},
     env,
     json_types::U128,
-    log, near_bindgen, AccountId, PanicOnDefault, PromiseOrValue,
+    log, near_bindgen, AccountId, NearToken, PanicOnDefault, PromiseOrValue,
 };
-use near_sdk_contract_tools::{compat_yoctonear, ft::*};
+use near_sdk_contract_tools::ft::*;
 
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 #[borsh(crate = "near_sdk::borsh")]
@@ -33,7 +33,7 @@ impl Nep141Receiver for Contract {
             log!("Transferring {} to {}", amount.0, account_id);
 
             return ext_nep141::ext(env::predecessor_account_id())
-                .with_attached_deposit(compat_yoctonear!(1u128))
+                .with_attached_deposit(NearToken::from_yoctonear(1u128))
                 .ft_transfer(account_id, amount, None)
                 .then(Contract::ext(env::current_account_id()).return_value(amount)) // ask to return the token even though we don't own it anymore
                 .into();

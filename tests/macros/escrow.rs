@@ -1,9 +1,11 @@
 use near_sdk::{
     borsh::BorshSerialize, json_types::U64, near_bindgen, test_utils::VMContextBuilder,
-    testing_env, AccountId, BorshStorageKey, VMContext,
+    testing_env, AccountId, BorshStorageKey, NearToken, VMContext,
 };
-use near_sdk_contract_tools::escrow::{Escrow, EscrowInternal};
-use near_sdk_contract_tools::{Escrow, COMPAT_ONE_YOCTONEAR};
+use near_sdk_contract_tools::{
+    escrow::{Escrow, EscrowInternal},
+    Escrow,
+};
 
 const ID: U64 = U64(1);
 const IS_NOT_READY: bool = false;
@@ -41,10 +43,7 @@ fn alice() -> AccountId {
     "alice".parse().unwrap()
 }
 
-fn get_context(
-    attached_deposit: near_sdk_contract_tools::CompatNearToken,
-    signer: Option<AccountId>,
-) -> VMContext {
+fn get_context(attached_deposit: NearToken, signer: Option<AccountId>) -> VMContext {
     VMContextBuilder::new()
         .signer_account_id(signer.clone().unwrap_or_else(alice))
         .predecessor_account_id(signer.unwrap_or_else(alice))
@@ -55,7 +54,7 @@ fn get_context(
 
 #[test]
 fn test_can_lock() {
-    testing_env!(get_context(*COMPAT_ONE_YOCTONEAR, None));
+    testing_env!(get_context(NearToken::from_yoctonear(1u128), None));
     let mut contract = IsReadyLockableContract::new();
 
     contract.lock(&ID, &IS_NOT_READY);
@@ -65,7 +64,7 @@ fn test_can_lock() {
 #[test]
 #[should_panic(expected = "Already locked")]
 fn test_cannot_lock_twice() {
-    testing_env!(get_context(*COMPAT_ONE_YOCTONEAR, None));
+    testing_env!(get_context(NearToken::from_yoctonear(1u128), None));
     let mut contract = IsReadyLockableContract::new();
 
     contract.lock(&ID, &IS_NOT_READY);
@@ -74,7 +73,7 @@ fn test_cannot_lock_twice() {
 
 #[test]
 fn test_can_unlock() {
-    testing_env!(get_context(*COMPAT_ONE_YOCTONEAR, None));
+    testing_env!(get_context(NearToken::from_yoctonear(1u128), None));
     let mut contract = IsReadyLockableContract::new();
 
     let is_ready = true;
@@ -87,7 +86,7 @@ fn test_can_unlock() {
 #[test]
 #[should_panic(expected = "Unlock handler failed")]
 fn test_cannot_unlock_until_ready() {
-    testing_env!(get_context(*COMPAT_ONE_YOCTONEAR, None));
+    testing_env!(get_context(NearToken::from_yoctonear(1u128), None));
     let mut contract = IsReadyLockableContract::new();
 
     let is_ready = true;

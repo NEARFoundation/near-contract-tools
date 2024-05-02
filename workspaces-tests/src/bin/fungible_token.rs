@@ -10,7 +10,7 @@ use near_sdk::{
     store::Vector,
     PanicOnDefault,
 };
-use near_sdk_contract_tools::{compat_near_to_u128, ft::*};
+use near_sdk_contract_tools::ft::*;
 
 #[derive(BorshSerialize, BorshDeserialize)]
 #[borsh(crate = "near_sdk::borsh")]
@@ -57,9 +57,8 @@ impl Contract {
         let storage_end = env::storage_usage();
         self.lock_storage(
             &env::predecessor_account_id(),
-            ((storage_end - storage_start) as u128
-                * compat_near_to_u128!(env::storage_byte_cost()))
-            .into(),
+            ((storage_end - storage_start) as u128 * env::storage_byte_cost().as_yoctonear())
+                .into(),
         )
         .unwrap_or_else(|e| env::panic_str(&format!("Storage lock error: {}", e)));
     }

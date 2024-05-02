@@ -1,8 +1,10 @@
 #![allow(dead_code)]
 
-use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
-use near_sdk::{env, near_bindgen, store, AccountId};
-use near_sdk_contract_tools::{compat_near, compat_near_to_u128, hook::Hook, nft::*};
+use near_sdk::{
+    borsh::{BorshDeserialize, BorshSerialize},
+    env, near_bindgen, store, AccountId,
+};
+use near_sdk_contract_tools::{hook::Hook, nft::*};
 
 mod hooks;
 mod manual_integration;
@@ -27,6 +29,8 @@ impl From<Token> for TokenRecord {
 }
 
 mod full_no_hooks {
+    use near_sdk::NearToken;
+
     use super::*;
 
     #[derive(BorshSerialize, BorshDeserialize)]
@@ -51,7 +55,7 @@ mod full_no_hooks {
         Nep145Controller::deposit_to_storage_account(
             &mut n,
             &alice,
-            compat_near_to_u128!(compat_near!(1u128)).into(),
+            NearToken::from_near(1).as_yoctonear().into(),
         )
         .unwrap();
 
@@ -117,17 +121,14 @@ impl NonFungibleToken {
 mod tests {
     use near_sdk::{
         test_utils::{get_logs, VMContextBuilder},
-        testing_env, AccountId,
+        testing_env, AccountId, NearToken,
     };
-    use near_sdk_contract_tools::{
-        compat_yoctonear,
-        standard::{
-            nep171::{
-                event::{Nep171Event, NftTransferLog},
-                Nep171,
-            },
-            nep297::Event,
+    use near_sdk_contract_tools::standard::{
+        nep171::{
+            event::{Nep171Event, NftTransferLog},
+            Nep171,
         },
+        nep297::Event,
     };
 
     use super::*;
@@ -154,7 +155,7 @@ mod tests {
 
         testing_env!(VMContextBuilder::new()
             .predecessor_account_id(account_alice.clone())
-            .attached_deposit(compat_yoctonear!(1u128))
+            .attached_deposit(NearToken::from_yoctonear(1u128))
             .build());
 
         contract.nft_transfer(account_bob.clone(), token_id.to_string(), None, None);

@@ -39,7 +39,7 @@ pub fn prefix_key(prefix: &[u8], key: &[u8]) -> Vec<u8> {
 /// near_sdk::env::storage_write(b"key", b"value");
 ///
 /// near_sdk::testing_env!(near_sdk::test_utils::VMContextBuilder::new()
-///     .attached_deposit(near_sdk::ONE_NEAR)
+///     .attached_deposit(near_sdk::NearToken::from_near(1))
 ///     .build());
 /// // Attached deposit must cover storage fee or this function will panic
 /// apply_storage_fee_and_refund(initial_storage_usage, additional_fees);

@@ -1,5 +1,4 @@
 use near_sdk::{json_types::U128, serde_json::json};
-use near_sdk_contract_tools::{compat_near_to_u128, COMPAT_ONE_NEAR};
 use near_workspaces::{sandbox, types::NearToken, Account, Contract, DevNetwork, Worker};
 use workspaces_tests_utils::ONE_NEAR;
 
@@ -48,12 +47,12 @@ async fn storage_fee() {
         .unwrap()
         .0;
 
-    let num_bytes: usize = compat_near_to_u128!(COMPAT_ONE_NEAR.saturating_div(byte_cost))
-        .try_into()
-        .unwrap();
-    let payload = "0".repeat(num_bytes);
+    let num_bytes = NearToken::from_near(1)
+        .saturating_div(byte_cost)
+        .as_yoctonear();
+    let payload = "0".repeat(usize::try_from(num_bytes).unwrap());
     // This is the absolute minimum this payload should require to store (uncompressed)
-    let minimum_storage_fee = NearToken::from_yoctonear(num_bytes as u128 * byte_cost);
+    let minimum_storage_fee = NearToken::from_yoctonear(num_bytes * byte_cost);
     let gas_price = worker.gas_price().await.unwrap();
 
     let go = || async {

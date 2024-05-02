@@ -4,13 +4,14 @@
 
 ```diff
 use near_sdk::{
-    borsh::{self, BorshDeserialize, BorshSerialize},
+    borsh::{BorshSerialize, BorshDeserialize},
     near_bindgen, PanicOnDefault,
 };
 + use near_sdk_contract_tools::nft::*;
 
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 + #[derive(NonFungibleToken)]
+#[borsh(crate = "near_sdk::borsh")]
 #[near_bindgen]
 pub struct MyNftContract {}
 
@@ -35,13 +36,14 @@ impl MyNftContract {
 
 ```diff
 use near_sdk::{
-    borsh::{self, BorshDeserialize, BorshSerialize},
+    borsh::{BorshSerialize, BorshDeserialize},
     near_bindgen, PanicOnDefault,
 };
 + use near_sdk_contract_tools::ft::*;
 
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 + #[derive(FungibleToken)]
+#[borsh(crate = "near_sdk::borsh")]
 #[near_bindgen]
 pub struct MyFtContract {}
 
@@ -195,13 +197,14 @@ Use the `NonFungibleToken` derive macro to implement [NEP-145][nep145], [NEP-171
 
 ```rust
 use near_sdk::{
-    borsh::{self, BorshSerialize, BorshDeserialize},
+    borsh::{BorshSerialize, BorshDeserialize},
     PanicOnDefault,
     near_bindgen,
 };
 use near_sdk_contract_tools::nft::*;
 
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, NonFungibleToken)]
+#[borsh(crate = "near_sdk::borsh")]
 #[near_bindgen]
 pub struct MyNft {}
 ```
@@ -223,6 +226,7 @@ use near_sdk::{
 };
 
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, FungibleToken, Pause)]
+#[borsh(crate = "near_sdk::borsh")]
 #[fungible_token(all_hooks = "PausableHook")]
 #[near_bindgen]
 struct Contract {}
