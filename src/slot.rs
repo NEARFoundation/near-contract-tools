@@ -97,7 +97,7 @@ impl<T> Slot<T> {
 impl<T: BorshSerialize> Slot<T> {
     /// Writes a value to the managed storage slot
     pub fn write(&mut self, value: &T) -> bool {
-        self.write_raw(&{ borsh::to_vec((&value)) }.unwrap())
+        self.write_raw(&{ borsh::to_vec(&value) }.unwrap())
     }
 
     /// If the given value is `Some(T)`, writes `T` to storage. Otherwise,

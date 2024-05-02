@@ -3,7 +3,6 @@ use near_sdk::{
     BorshStorageKey,
 };
 use near_sdk_contract_tools::{
-    compat_derive_storage_key,
     owner::{Owner, OwnerExternal},
     Owner,
 };
@@ -46,9 +45,9 @@ use implicit_key::OwnedStructImplicitKey;
 
 #[derive(BorshSerialize, BorshStorageKey)]
 #[borsh(crate = "near_sdk::borsh")]
-    enum StorageKey {
-        MyStorageKey,
-    }
+enum StorageKey {
+    MyStorageKey,
+}
 
 #[derive(Owner)]
 #[owner(storage_key = "StorageKey::MyStorageKey")]

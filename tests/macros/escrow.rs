@@ -1,14 +1,9 @@
 use near_sdk::{
-    borsh::{BorshDeserialize, BorshSerialize},
-    json_types::U64,
-    near_bindgen,
-    test_utils::VMContextBuilder,
+    borsh::BorshSerialize, json_types::U64, near_bindgen, test_utils::VMContextBuilder,
     testing_env, AccountId, BorshStorageKey, VMContext,
 };
 use near_sdk_contract_tools::escrow::{Escrow, EscrowInternal};
-use near_sdk_contract_tools::{
-    Escrow, COMPAT_ONE_YOCTONEAR,
-};
+use near_sdk_contract_tools::{Escrow, COMPAT_ONE_YOCTONEAR};
 
 const ID: U64 = U64(1);
 const IS_NOT_READY: bool = false;

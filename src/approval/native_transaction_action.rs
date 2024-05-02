@@ -128,14 +128,14 @@ impl<C> super::Action<C> for NativeTransactionAction {
                 } => promise.function_call(
                     function_name,
                     arguments.0,
-                    { NearToken::from_yoctonear(u128::from(amount)) },
-                    { Gas::from_gas((gas.0)) },
+                    NearToken::from_yoctonear(u128::from(amount)),
+                    Gas::from_gas(gas.0),
                 ),
                 PromiseAction::Transfer { amount } => {
-                    promise.transfer({ NearToken::from_yoctonear((amount.0)) })
+                    promise.transfer(NearToken::from_yoctonear(amount.0))
                 }
                 PromiseAction::Stake { amount, public_key } => promise.stake(
-                    { NearToken::from_yoctonear((amount.0)) },
+                    NearToken::from_yoctonear(amount.0),
                     public_key.parse().unwrap(),
                 ),
                 PromiseAction::DeleteKey { public_key } => {

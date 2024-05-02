@@ -1,15 +1,14 @@
 use near_sdk::{borsh::BorshSerialize, near_bindgen, BorshStorageKey};
 use near_sdk_contract_tools::{
-    compat_derive_storage_key,
     pause::{Pause, PauseExternal},
     Pause,
 };
 
 #[derive(BorshSerialize, BorshStorageKey)]
 #[borsh(crate = "near_sdk::borsh")]
-    enum StorageKey {
-        Pause,
-    }
+enum StorageKey {
+    Pause,
+}
 
 mod implicit_key {
     use super::*;

@@ -46,10 +46,10 @@ impl approval::Action<Contract> for MyAction {
 
 #[derive(BorshSerialize, BorshStorageKey)]
 #[borsh(crate = "near_sdk::borsh")]
-    #[derive(Debug, Clone)]
-    pub enum Role {
-        Multisig,
-    }
+#[derive(Debug, Clone)]
+pub enum Role {
+    Multisig,
+}
 
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, Rbac)]
 #[borsh(crate = "near_sdk::borsh")]

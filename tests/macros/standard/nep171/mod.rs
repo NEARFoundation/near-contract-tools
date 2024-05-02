@@ -2,9 +2,7 @@
 
 use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::{env, near_bindgen, store, AccountId};
-use near_sdk_contract_tools::{
-    compat_near, compat_near_to_u128, hook::Hook, nft::*,
-};
+use near_sdk_contract_tools::{compat_near, compat_near_to_u128, hook::Hook, nft::*};
 
 mod hooks;
 mod manual_integration;

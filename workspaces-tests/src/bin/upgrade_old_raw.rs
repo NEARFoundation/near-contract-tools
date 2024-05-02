@@ -3,8 +3,9 @@
 workspaces_tests::predicate!();
 
 use near_sdk::{
-    borsh::{BorshSerialize, BorshDeserialize},
-    env, near_bindgen, PanicOnDefault};
+    borsh::{BorshDeserialize, BorshSerialize},
+    env, near_bindgen, PanicOnDefault,
+};
 use near_sdk_contract_tools::{owner::*, upgrade::PostUpgrade, Owner};
 
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault, Owner)]

@@ -225,12 +225,7 @@ mod tests {
         let deserializalized = FastAccountId::try_from_slice(&serialized).unwrap();
         assert_eq!(account_id, deserializalized);
 
-        let sdk_serialized = {
-            {
-                near_sdk::borsh::to_vec((&sdk_account_id))
-            }
-        }
-        .unwrap();
+        let sdk_serialized = borsh::to_vec(&sdk_account_id).unwrap();
         assert!(sdk_serialized.len() > serialized.len()); // gottem
     }
 
@@ -251,12 +246,7 @@ mod tests {
 
         for test in tests {
             let account_id = FastAccountId::new_unchecked(test);
-            let serialized = {
-                {
-                    near_sdk::borsh::to_vec((&account_id))
-                }
-            }
-            .unwrap();
+            let serialized = borsh::to_vec(&account_id).unwrap();
             let deserializalized = FastAccountId::try_from_slice(&serialized).unwrap();
             assert_eq!(account_id, deserializalized);
         }
