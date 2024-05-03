@@ -21,6 +21,8 @@ pub struct NonFungibleTokenMeta {
     pub mint_hook: Option<Type>,
     pub transfer_hook: Option<Type>,
     pub burn_hook: Option<Type>,
+    pub token_data: Option<Type>,
+    pub check_external_transfer: Option<Type>,
 
     // NEP-177 fields
     pub metadata_storage_key: Option<Expr>,
@@ -56,6 +58,8 @@ pub fn expand(meta: NonFungibleTokenMeta) -> Result<TokenStream, darling::Error>
         mint_hook,
         transfer_hook,
         burn_hook,
+        token_data,
+        check_external_transfer,
 
         metadata_storage_key,
 
@@ -88,6 +92,8 @@ pub fn expand(meta: NonFungibleTokenMeta) -> Result<TokenStream, darling::Error>
         near_sdk: near_sdk.clone(),
     });
 
+    let token_data = unitify(token_data);
+
     let expand_nep171 = nep171::expand(nep171::Nep171Meta {
         storage_key: core_storage_key,
         all_hooks: Some(parse_quote! { (
@@ -103,11 +109,13 @@ pub fn expand(meta: NonFungibleTokenMeta) -> Result<TokenStream, darling::Error>
         mint_hook,
         transfer_hook,
         burn_hook,
-        check_external_transfer: Some(syn::parse_quote! { #me::standard::nep178::TokenApprovals }),
-
-        token_data: Some(
-            syn::parse_quote! { (#me::standard::nep177::TokenMetadata, #me::standard::nep178::TokenApprovals) },
-        ),
+        check_external_transfer: Some(check_external_transfer.unwrap_or_else(|| {
+            parse_quote! { #me::standard::nep178::TokenApprovals }
+        })),
+        token_data: Some(syn::parse_quote! { (
+            #token_data,
+            (#me::standard::nep177::TokenMetadata, #me::standard::nep178::TokenApprovals),
+        ) }),
 
         generics: generics.clone(),
         ident: ident.clone(),

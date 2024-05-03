@@ -1,11 +1,54 @@
 workspaces_tests::predicate!();
 
-use near_sdk::{env, log, near, PanicOnDefault};
-use near_sdk_contract_tools::{hook::Hook, nft::*};
+use near_sdk::{env, log, near, serde_json::json, PanicOnDefault};
+use near_sdk_contract_tools::{
+    hook::Hook,
+    nft::{
+        nep171::{CheckExternalTransfer, LoadTokenMetadata},
+        *,
+    },
+};
 
 #[derive(NonFungibleToken, PanicOnDefault)]
+#[non_fungible_token(
+    transfer_hook = "Self",
+    approve_hook = "Self",
+    revoke_hook = "Self",
+    revoke_all_hook = "Self",
+    token_data = "ExtraTokenData",
+    check_external_transfer = "ExtraCheckExternalTransfer"
+)]
 #[near(contract_state)]
 pub struct Contract {}
+
+pub struct ExtraCheckExternalTransfer;
+
+impl CheckExternalTransfer<Contract> for ExtraCheckExternalTransfer {
+    fn check_external_transfer(
+        contract: &Contract,
+        transfer: &Nep171Transfer,
+    ) -> Result<near_sdk::AccountId, nep171::error::Nep171TransferError> {
+        TokenApprovals::check_external_transfer(contract, transfer)
+    }
+}
+
+pub struct ExtraTokenData;
+
+impl LoadTokenMetadata<Contract> for ExtraTokenData {
+    fn load(
+        _contract: &Contract,
+        _token_id: &TokenId,
+        metadata: &mut std::collections::HashMap<String, near_sdk::serde_json::Value>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        metadata.insert(
+            "funky_data".to_string(),
+            json!({
+                "funky": "data",
+            }),
+        );
+        Ok(())
+    }
+}
 
 impl Hook<Contract, Nep178Approve<'_>> for Contract {
     fn hook<R>(

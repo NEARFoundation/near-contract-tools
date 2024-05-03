@@ -166,7 +166,8 @@ async fn create_and_mint_with_metadata_and_enumeration() {
             owner_id: alice.id().as_str().parse().unwrap(),
             extensions_metadata: [
                 ("metadata".to_string(), token_meta("token_0".to_string())),
-                ("approved_account_ids".to_string(), json!({}),)
+                ("approved_account_ids".to_string(), json!({})),
+                ("funky_data".to_string(), json!({"funky": "data"})),
             ]
             .into(),
         }),
@@ -178,7 +179,8 @@ async fn create_and_mint_with_metadata_and_enumeration() {
             owner_id: bob.id().as_str().parse().unwrap(),
             extensions_metadata: [
                 ("metadata".to_string(), token_meta("token_1".to_string())),
-                ("approved_account_ids".to_string(), json!({}),)
+                ("approved_account_ids".to_string(), json!({})),
+                ("funky_data".to_string(), json!({"funky": "data"})),
             ]
             .into(),
         }),
@@ -190,7 +192,8 @@ async fn create_and_mint_with_metadata_and_enumeration() {
             owner_id: charlie.id().as_str().parse().unwrap(),
             extensions_metadata: [
                 ("metadata".to_string(), token_meta("token_2".to_string())),
-                ("approved_account_ids".to_string(), json!({}),)
+                ("approved_account_ids".to_string(), json!({})),
+                ("funky_data".to_string(), json!({"funky": "data"})),
             ]
             .into(),
         }),
@@ -809,6 +812,7 @@ async fn transfer_approval_success() {
                     bob.id().to_string(): 0,
                 }),
             ),
+            ("funky_data".to_string(), json!({"funky": "data"})),
         ]
         .into(),
     };
@@ -847,7 +851,8 @@ async fn transfer_approval_success() {
             owner_id: charlie.id().as_str().parse().unwrap(),
             extensions_metadata: [
                 ("metadata".to_string(), token_meta("token_0".to_string())),
-                ("approved_account_ids".to_string(), json!({}))
+                ("approved_account_ids".to_string(), json!({})),
+                ("funky_data".to_string(), json!({"funky": "data"})),
             ]
             .into(),
         }),
