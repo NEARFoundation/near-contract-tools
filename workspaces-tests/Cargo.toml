@@ -69,7 +69,7 @@ new-without-default = "allow"
 # missing-panics-doc = "allow"
 
 [dependencies]
-near-sdk = { workspace = true, default-features = false }
+near-sdk.workspace = true
 near-sdk-contract-tools = { path = "../", default-features = false, features = [
     "unstable",
 ] }
