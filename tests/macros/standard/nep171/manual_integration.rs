@@ -41,7 +41,7 @@ impl Contract {
     pub fn new() -> Self {
         let mut contract = Self { next_token_id: 0 };
 
-        contract.set_contract_metadata(nep177::ContractMetadata::new(
+        contract.set_contract_metadata(&nep177::ContractMetadata::new(
             "My NFT".to_string(),
             "MYNFT".to_string(),
             None,
@@ -61,7 +61,7 @@ impl Contract {
             self,
             token_id.clone(),
             env::predecessor_account_id(),
-            nep177::TokenMetadata::new()
+            &nep177::TokenMetadata::new()
                 .title(format!("Token {token_id}"))
                 .description(format!("This is token {token_id}.")),
         )

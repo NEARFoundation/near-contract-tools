@@ -12,7 +12,7 @@ impl MyFungibleTokenContract {
         let mut contract = Self {};
 
         contract.set_metadata(
-            &FungibleTokenMetadata::new("My Fungible Token".into(), "MYFT".into(), 24)
+            &ContractMetadata::new("My Fungible Token".into(), "MYFT".into(), 24)
                 .icon("https://example.com/icon.png".into())
                 .reference("https://example.com/metadata.json".into())
                 .reference_hash(Base64VecU8::from([97, 115, 100, 102].to_vec())),

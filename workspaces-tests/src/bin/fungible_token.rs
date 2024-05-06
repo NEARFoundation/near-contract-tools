@@ -23,7 +23,7 @@ impl Contract {
             blobs: Vector::new(b"b"),
         };
 
-        contract.set_metadata(&FungibleTokenMetadata::new(
+        contract.set_metadata(&ContractMetadata::new(
             "My Fungible Token".into(),
             "MYFT".into(),
             24,

@@ -228,7 +228,7 @@ pub trait Nep177Controller {
         &mut self,
         token_id: TokenId,
         owner_id: AccountId,
-        metadata: TokenMetadata,
+        metadata: &TokenMetadata,
     ) -> Result<(), Nep171MintError>;
 
     /// Burn a token with metadata.
@@ -240,17 +240,17 @@ pub trait Nep177Controller {
 
     /// Sets the metadata for a token ID without checking whether the token
     /// exists, etc. and emits an [`Nep171Event::NftMetadataUpdate`] event.
-    fn set_token_metadata_unchecked(&mut self, token_id: TokenId, metadata: Option<TokenMetadata>);
+    fn set_token_metadata_unchecked(&mut self, token_id: TokenId, metadata: Option<&TokenMetadata>);
 
     /// Sets the metadata for a token ID and emits an [`Nep171Event::NftMetadataUpdate`] event.
     fn set_token_metadata(
         &mut self,
         token_id: TokenId,
-        metadata: TokenMetadata,
+        metadata: &TokenMetadata,
     ) -> Result<(), UpdateTokenMetadataError>;
 
     /// Sets the contract metadata and emits an [`Nep171Event::ContractMetadataUpdate`] event.
-    fn set_contract_metadata(&mut self, metadata: ContractMetadata);
+    fn set_contract_metadata(&mut self, metadata: &ContractMetadata);
 
     /// Returns the contract metadata.
     fn contract_metadata(&self) -> ContractMetadata;
@@ -271,7 +271,7 @@ impl<T: Nep177ControllerInternal + Nep171Controller> Nep177Controller for T {
     fn set_token_metadata(
         &mut self,
         token_id: TokenId,
-        metadata: TokenMetadata,
+        metadata: &TokenMetadata,
     ) -> Result<(), UpdateTokenMetadataError> {
         if self.token_owner(&token_id).is_some() {
             self.set_token_metadata_unchecked(token_id, Some(metadata));
@@ -281,8 +281,8 @@ impl<T: Nep177ControllerInternal + Nep171Controller> Nep177Controller for T {
         }
     }
 
-    fn set_contract_metadata(&mut self, metadata: ContractMetadata) {
-        Self::slot_contract_metadata().set(Some(&metadata));
+    fn set_contract_metadata(&mut self, metadata: &ContractMetadata) {
+        Self::slot_contract_metadata().set(Some(metadata));
         Nep171Event::ContractMetadataUpdate(vec![NftContractMetadataUpdateLog { memo: None }])
             .emit();
     }
@@ -291,7 +291,7 @@ impl<T: Nep177ControllerInternal + Nep171Controller> Nep177Controller for T {
         &mut self,
         token_id: TokenId,
         owner_id: AccountId,
-        metadata: TokenMetadata,
+        metadata: &TokenMetadata,
     ) -> Result<(), Nep171MintError> {
         let token_ids = [token_id];
         let action = Nep171Mint {
@@ -322,8 +322,12 @@ impl<T: Nep177ControllerInternal + Nep171Controller> Nep177Controller for T {
         Ok(())
     }
 
-    fn set_token_metadata_unchecked(&mut self, token_id: TokenId, metadata: Option<TokenMetadata>) {
-        <Self as Nep177ControllerInternal>::slot_token_metadata(&token_id).set(metadata.as_ref());
+    fn set_token_metadata_unchecked(
+        &mut self,
+        token_id: TokenId,
+        metadata: Option<&TokenMetadata>,
+    ) {
+        <Self as Nep177ControllerInternal>::slot_token_metadata(&token_id).set(metadata);
         Nep171Event::NftMetadataUpdate(vec![NftMetadataUpdateLog {
             token_ids: vec![token_id],
             memo: None,

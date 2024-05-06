@@ -2,12 +2,11 @@
 
 ## NFT
 
-```diff
-use near_sdk::{near, PanicOnDefault};
-+ use near_sdk_contract_tools::nft::*;
+```rust
+use near_sdk::near;
+use near_sdk_contract_tools::nft::*;
 
-#[derive(PanicOnDefault)]
-+ #[derive(NonFungibleToken)]
+#[derive(Default, NonFungibleToken)]
 #[near(contract_state)]
 pub struct MyNftContract {}
 
@@ -17,11 +16,11 @@ impl MyNftContract {
     pub fn new() -> Self {
         let mut contract = Self {};
 
-+         contract.set_contract_metadata(ContractMetadata::new(
-+             "My NFT".to_string(),
-+             "MNFT".to_string(),
-+             None,
-+         ));
+        contract.set_contract_metadata(&ContractMetadata::new(
+            "My NFT".to_string(),
+            "MNFT".to_string(),
+            None,
+        ));
 
         contract
     }
@@ -30,12 +29,11 @@ impl MyNftContract {
 
 ## FT
 
-```diff
-use near_sdk::{near, PanicOnDefault};
-+ use near_sdk_contract_tools::ft::*;
+```rust
+use near_sdk::near;
+use near_sdk_contract_tools::ft::*;
 
-#[derive(PanicOnDefault)]
-+ #[derive(FungibleToken)]
+#[derive(Default, FungibleToken)]
 #[near(contract_state)]
 pub struct MyFtContract {}
 
@@ -45,11 +43,11 @@ impl MyFtContract {
     pub fn new() -> Self {
         let mut contract = Self {};
 
-+         contract.set_metadata(&FungibleTokenMetadata::new(
-+             "My Fungible Token".into(),
-+             "MYFT".into(),
-+             24,
-+         ));
+        contract.set_metadata(&ContractMetadata::new(
+            "My Fungible Token".into(),
+            "MYFT".into(),
+            24,
+        ));
 
         contract
     }
@@ -157,10 +155,10 @@ e.emit();
 To create a contract that is compatible with the [NEP-141][nep141], [NEP-145][nep145], and [NEP-148][nep148] standards, that emits standard-compliant ([NEP-297][nep297]) events.
 
 ```rust
+use near_sdk::near;
 use near_sdk_contract_tools::ft::*;
-use near_sdk::{near, PanicOnDefault};
 
-#[derive(FungibleToken, PanicOnDefault)]
+#[derive(Default, FungibleToken)]
 #[near(contract_state)]
 struct MyFt {}
 
@@ -170,7 +168,7 @@ impl MyFt {
     pub fn new() -> Self {
         let mut contract = Self {};
 
-        contract.set_metadata(&FungibleTokenMetadata::new(
+        contract.set_metadata(&ContractMetadata::new(
             "My Fungible Token".to_string(),
             "MYFT".to_string(),
             24,

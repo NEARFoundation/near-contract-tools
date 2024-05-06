@@ -109,7 +109,7 @@ pub mod ft {
                 StorageBalance, StorageBalanceBounds,
             },
             nep148::{
-                self, ext_nep148, FungibleTokenMetadata, Nep148, Nep148Controller,
+                self, ext_nep148, ContractMetadata, Nep148, Nep148Controller,
                 Nep148ControllerInternal,
             },
         },

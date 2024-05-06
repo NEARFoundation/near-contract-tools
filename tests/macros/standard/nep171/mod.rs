@@ -49,8 +49,12 @@ mod full_no_hooks {
         Nep145Controller::deposit_to_storage_account(&mut n, &alice, NearToken::from_near(1))
             .unwrap();
 
-        n.mint_with_metadata(token_id.clone(), alice, TokenMetadata::new().title("Title"))
-            .unwrap();
+        n.mint_with_metadata(
+            token_id.clone(),
+            alice,
+            &TokenMetadata::new().title("Title"),
+        )
+        .unwrap();
 
         let nft_tok = n.nft_token(token_id);
         dbg!(nft_tok);

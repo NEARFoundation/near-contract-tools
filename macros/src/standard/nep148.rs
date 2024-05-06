@@ -44,7 +44,7 @@ pub fn expand(meta: Nep148Meta) -> Result<TokenStream, darling::Error> {
 
         #[#near_sdk::near]
         impl #imp #me::standard::nep148::Nep148 for #ident #ty #wher {
-            fn ft_metadata(&self) -> #me::standard::nep148::FungibleTokenMetadata {
+            fn ft_metadata(&self) -> #me::standard::nep148::ContractMetadata {
                 #me::standard::nep148::Nep148Controller::get_metadata(self)
             }
         }

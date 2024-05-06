@@ -15,7 +15,7 @@ pub const ERR_METADATA_UNSET: &str = "NEP-148 metadata is not set";
 /// NEP-148-compatible metadata struct
 #[derive(Eq, PartialEq, Clone, Debug)]
 #[near(serializers = [borsh, json])]
-pub struct FungibleTokenMetadata {
+pub struct ContractMetadata {
     /// Version of the NEP-148 spec
     pub spec: String,
     /// Human-friendly name of the token contract
@@ -35,7 +35,7 @@ pub struct FungibleTokenMetadata {
     pub decimals: u8,
 }
 
-impl FungibleTokenMetadata {
+impl ContractMetadata {
     /// Creates a new metadata struct.
     pub fn new(name: String, symbol: String, decimals: u8) -> Self {
         Self {
@@ -106,7 +106,7 @@ pub trait Nep148ControllerInternal {
     }
 
     /// Returns the storage slot for NEP-148 metadata.
-    fn metadata() -> Slot<FungibleTokenMetadata> {
+    fn metadata() -> Slot<ContractMetadata> {
         Self::root().field(StorageKey::Metadata)
     }
 }
@@ -118,20 +118,20 @@ pub trait Nep148Controller {
     /// # Panics
     ///
     /// Panics if the metadata has not been set.
-    fn get_metadata(&self) -> FungibleTokenMetadata;
+    fn get_metadata(&self) -> ContractMetadata;
 
     /// Sets the metadata struct for this contract.
-    fn set_metadata(&mut self, metadata: &FungibleTokenMetadata);
+    fn set_metadata(&mut self, metadata: &ContractMetadata);
 }
 
 impl<T: Nep148ControllerInternal> Nep148Controller for T {
-    fn get_metadata(&self) -> FungibleTokenMetadata {
+    fn get_metadata(&self) -> ContractMetadata {
         Self::metadata()
             .read()
             .unwrap_or_else(|| env::panic_str(ERR_METADATA_UNSET))
     }
 
-    fn set_metadata(&mut self, metadata: &FungibleTokenMetadata) {
+    fn set_metadata(&mut self, metadata: &ContractMetadata) {
         Self::metadata().set(Some(metadata));
     }
 }
@@ -141,12 +141,12 @@ mod ext {
 
     use near_sdk::ext_contract;
 
-    use super::FungibleTokenMetadata;
+    use super::ContractMetadata;
 
     /// Contract that supports the NEP-148 metadata standard
     #[ext_contract(ext_nep148)]
     pub trait Nep148 {
         /// Returns the metadata struct for this contract.
-        fn ft_metadata(&self) -> FungibleTokenMetadata;
+        fn ft_metadata(&self) -> ContractMetadata;
     }
 }
