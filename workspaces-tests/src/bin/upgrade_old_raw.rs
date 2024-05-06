@@ -1,6 +1,6 @@
 workspaces_tests::predicate!();
 
-use near_sdk::{env, near, PanicOnDefault};
+use near_sdk::{env, near, require, PanicOnDefault};
 use near_sdk_contract_tools::{owner::*, upgrade::PostUpgrade, Owner};
 
 #[derive(Owner, PanicOnDefault)]
@@ -30,9 +30,11 @@ impl ContractOld {
 
 #[no_mangle]
 pub fn upgrade() {
-    near_sdk::env::setup_panic_hook();
+    env::setup_panic_hook();
 
-    ContractOld::require_owner();
+    let predecessor = env::predecessor_account_id();
+    let owner = ContractOld::slot_owner().read();
+    require!(Some(predecessor) == owner, "Owner only");
 
     unsafe {
         near_sdk_contract_tools::upgrade::raw::upgrade(PostUpgrade::default());

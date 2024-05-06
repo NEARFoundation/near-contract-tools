@@ -106,7 +106,7 @@ pub trait Nep148ControllerInternal {
     }
 
     /// Returns the storage slot for NEP-148 metadata.
-    fn metadata() -> Slot<FungibleTokenMetadata> {
+    fn slot_metadata() -> Slot<FungibleTokenMetadata> {
         Self::root().field(StorageKey::Metadata)
     }
 }
@@ -126,13 +126,13 @@ pub trait Nep148Controller {
 
 impl<T: Nep148ControllerInternal> Nep148Controller for T {
     fn get_metadata(&self) -> FungibleTokenMetadata {
-        Self::metadata()
+        Self::slot_metadata()
             .read()
             .unwrap_or_else(|| env::panic_str(ERR_METADATA_UNSET))
     }
 
     fn set_metadata(&mut self, metadata: &FungibleTokenMetadata) {
-        Self::metadata().set(Some(metadata));
+        Self::slot_metadata().set(Some(metadata));
     }
 }
 

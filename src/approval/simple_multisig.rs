@@ -273,8 +273,9 @@ mod tests {
     impl Contract {
         #[init]
         pub fn new() -> Self {
-            <Self as ApprovalManager<_, _, _>>::init(Configuration::new(2, 10000));
-            Self {}
+            let mut contract = Self {};
+            ApprovalManager::init(&mut contract, Configuration::new(2, 10000));
+            contract
         }
 
         pub fn obtain_multisig_permission(&mut self) {
@@ -328,22 +329,22 @@ mod tests {
         let request_id = contract.create(true);
 
         assert_eq!(request_id, 0);
-        assert!(Contract::is_approved_for_execution(request_id).is_err());
+        assert!(contract.is_approved_for_execution(request_id).is_err());
 
         predecessor(&alice);
         contract.approve(request_id);
 
-        assert!(Contract::is_approved_for_execution(request_id).is_err());
+        assert!(contract.is_approved_for_execution(request_id).is_err());
 
         predecessor(&charlie);
         contract.approve(request_id);
 
-        assert!(Contract::is_approved_for_execution(request_id).is_ok());
+        assert!(contract.is_approved_for_execution(request_id).is_ok());
 
         predecessor(&bob);
         contract.approve(request_id);
 
-        assert!(Contract::is_approved_for_execution(request_id).is_ok());
+        assert!(contract.is_approved_for_execution(request_id).is_ok());
 
         assert_eq!(contract.execute(request_id), "hello");
     }
@@ -361,7 +362,8 @@ mod tests {
 
         contract.approve(request_id);
 
-        let created_at = Contract::get_request(request_id)
+        let created_at = contract
+            .get_request(request_id)
             .unwrap()
             .approval_state
             .created_at_nanoseconds;
@@ -389,7 +391,8 @@ mod tests {
 
         contract.approve(request_id);
 
-        let created_at = Contract::get_request(request_id)
+        let created_at = contract
+            .get_request(request_id)
             .unwrap()
             .approval_state
             .created_at_nanoseconds;
@@ -418,7 +421,8 @@ mod tests {
 
         contract.approve(request_id);
 
-        let created_at = Contract::get_request(request_id)
+        let created_at = contract
+            .get_request(request_id)
             .unwrap()
             .approval_state
             .created_at_nanoseconds;

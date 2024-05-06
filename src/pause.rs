@@ -96,7 +96,7 @@ pub trait Pause {
     fn set_is_paused(&mut self, is_paused: bool);
 
     /// Returns `true` if the contract is paused, `false` otherwise
-    fn is_paused() -> bool;
+    fn is_paused(&self) -> bool;
 
     /// Pauses the contract if it is currently unpaused, panics otherwise.
     /// Emits a `PauseEvent::Pause` event.
@@ -107,10 +107,10 @@ pub trait Pause {
     fn unpause(&mut self);
 
     /// Rejects if the contract is unpaused.
-    fn require_paused();
+    fn require_paused(&self);
 
     /// Rejects if the contract is paused.
-    fn require_unpaused();
+    fn require_unpaused(&self);
 }
 
 impl<T: PauseInternal> Pause for T {
@@ -118,28 +118,28 @@ impl<T: PauseInternal> Pause for T {
         Self::slot_paused().write(&is_paused);
     }
 
-    fn is_paused() -> bool {
+    fn is_paused(&self) -> bool {
         Self::slot_paused().read().unwrap_or(false)
     }
 
     fn pause(&mut self) {
-        Self::require_unpaused();
+        self.require_unpaused();
         self.set_is_paused(true);
         PauseEvent::Pause.emit();
     }
 
     fn unpause(&mut self) {
-        Self::require_paused();
+        self.require_paused();
         self.set_is_paused(false);
         PauseEvent::Unpause.emit();
     }
 
-    fn require_paused() {
-        require!(Self::is_paused(), UNPAUSED_FAIL_MESSAGE);
+    fn require_paused(&self) {
+        require!(self.is_paused(), UNPAUSED_FAIL_MESSAGE);
     }
 
-    fn require_unpaused() {
-        require!(!Self::is_paused(), PAUSED_FAIL_MESSAGE);
+    fn require_unpaused(&self) {
+        require!(!self.is_paused(), PAUSED_FAIL_MESSAGE);
     }
 }
 
@@ -172,7 +172,7 @@ pub mod hooks {
         C: Pause,
     {
         fn hook<R>(contract: &mut C, _args: &A, f: impl FnOnce(&mut C) -> R) -> R {
-            C::require_unpaused();
+            contract.require_unpaused();
             f(contract)
         }
     }

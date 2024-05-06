@@ -31,7 +31,7 @@ impl Contract {
     }
 
     pub fn mint(&mut self) -> TokenId {
-        Self::require_unpaused();
+        self.require_unpaused();
 
         let token_id = format!("token_{}", self.next_token_id);
         self.next_token_id += 1;

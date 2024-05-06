@@ -169,11 +169,11 @@ where
     fn get_config() -> C;
 
     /// Get a request by ID
-    fn get_request(request_id: u32) -> Option<ActionRequest<A, S>>;
+    fn get_request(&self, request_id: u32) -> Option<ActionRequest<A, S>>;
 
     /// Must be called before using the Approval construct. Can only be called
     /// once.
-    fn init(config: C);
+    fn init(&mut self, config: C);
 
     /// Creates a new action request initialized with the given approval state
     fn create_request(
@@ -191,7 +191,10 @@ where
 
     /// Is the given request ID able to be executed if such a request were to
     /// be initiated by an authorized account?
-    fn is_approved_for_execution(request_id: u32) -> Result<(), C::ExecutionEligibilityError>;
+    fn is_approved_for_execution(
+        &self,
+        request_id: u32,
+    ) -> Result<(), C::ExecutionEligibilityError>;
 
     /// Tries to approve the action request designated by the given request ID
     /// with the given arguments. Panics if the request ID does not exist.
@@ -219,11 +222,11 @@ where
             .unwrap_or_else(|| env::panic_str(NOT_INITIALIZED))
     }
 
-    fn get_request(request_id: u32) -> Option<ActionRequest<A, S>> {
+    fn get_request(&self, request_id: u32) -> Option<ActionRequest<A, S>> {
         Self::slot_request(request_id).read()
     }
 
-    fn init(config: C) {
+    fn init(&mut self, config: C) {
         require!(
             Self::slot_config().swap(&config).is_none(),
             ALREADY_INITIALIZED,
@@ -260,7 +263,7 @@ where
         request_id: u32,
     ) -> Result<A::Output, ExecutionError<C::AuthorizationError, C::ExecutionEligibilityError>>
     {
-        Self::is_approved_for_execution(request_id)
+        self.is_approved_for_execution(request_id)
             .map_err(ExecutionError::ExecutionEligibility)?;
 
         let predecessor = env::predecessor_account_id();
@@ -279,7 +282,10 @@ where
         Ok(result)
     }
 
-    fn is_approved_for_execution(request_id: u32) -> Result<(), C::ExecutionEligibilityError> {
+    fn is_approved_for_execution(
+        &self,
+        request_id: u32,
+    ) -> Result<(), C::ExecutionEligibilityError> {
         let request = Self::slot_request(request_id).read().unwrap();
 
         let config = Self::get_config();
@@ -385,9 +391,9 @@ mod tests {
     impl Contract {
         #[init]
         pub fn new(threshold: u8) -> Self {
-            let contract = Self {};
+            let mut contract = Self {};
 
-            <Self as ApprovalManager<_, _, _>>::init(MultisigConfig { threshold });
+            ApprovalManager::init(&mut contract, MultisigConfig { threshold });
 
             contract
         }
@@ -499,16 +505,16 @@ mod tests {
             .unwrap();
 
         assert_eq!(request_id, 0);
-        assert!(Contract::is_approved_for_execution(request_id).is_err());
+        assert!(contract.is_approved_for_execution(request_id).is_err());
 
         contract.approve_request(request_id).unwrap();
 
-        assert!(Contract::is_approved_for_execution(request_id).is_err());
+        assert!(contract.is_approved_for_execution(request_id).is_err());
 
         predecessor(&charlie);
         contract.approve_request(request_id).unwrap();
 
-        assert!(Contract::is_approved_for_execution(request_id).is_ok());
+        assert!(contract.is_approved_for_execution(request_id).is_ok());
 
         assert_eq!(contract.execute_request(request_id).unwrap(), "hello");
     }
@@ -597,15 +603,15 @@ mod tests {
         predecessor(&bob);
         contract.approve_request(request_id).unwrap();
 
-        assert!(Contract::is_approved_for_execution(request_id).is_ok());
+        assert!(contract.is_approved_for_execution(request_id).is_ok());
 
         contract.remove_role(&alice, &Role::Multisig);
 
-        assert!(Contract::is_approved_for_execution(request_id).is_err());
+        assert!(contract.is_approved_for_execution(request_id).is_err());
 
         predecessor(&charlie);
         contract.approve_request(request_id).unwrap();
 
-        assert!(Contract::is_approved_for_execution(request_id).is_ok());
+        assert!(contract.is_approved_for_execution(request_id).is_ok());
     }
 }

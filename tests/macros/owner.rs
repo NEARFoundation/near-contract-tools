@@ -31,7 +31,7 @@ mod implicit_key {
         }
 
         pub fn set_permissioned_item(&mut self, value: u32) {
-            Self::require_owner();
+            self.require_owner();
 
             self.permissioned_item = value;
         }
@@ -76,7 +76,7 @@ impl OwnedStructExplicitKey {
     }
 
     pub fn set_permissioned_item(&mut self, value: u32) {
-        Self::require_owner();
+        self.require_owner();
 
         self.permissioned_item = value;
     }

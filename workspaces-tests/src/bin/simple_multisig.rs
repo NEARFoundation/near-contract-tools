@@ -91,12 +91,14 @@ impl Contract {
 
     #[init]
     pub fn new() -> Self {
-        <Self as ApprovalManager<_, _, _>>::init(Configuration::new(
-            Self::APPROVAL_THRESHOLD,
-            Self::VALIDITY_PERIOD,
-        ));
+        let mut contract = Self {};
 
-        Self {}
+        ApprovalManager::init(
+            &mut contract,
+            Configuration::new(Self::APPROVAL_THRESHOLD, Self::VALIDITY_PERIOD),
+        );
+
+        contract
     }
 
     pub fn obtain_multisig_permission(&mut self) {
@@ -122,7 +124,7 @@ impl Contract {
     }
 
     pub fn is_approved(&self, request_id: u32) -> bool {
-        <Contract as ApprovalManager<_, _, _>>::is_approved_for_execution(request_id).is_ok()
+        self.is_approved_for_execution(request_id).is_ok()
     }
 
     pub fn execute(&mut self, request_id: u32) -> String {

@@ -108,7 +108,7 @@ pub fn expand(meta: UpgradeMeta) -> Result<TokenStream, darling::Error> {
         HookBody::Empty => Some(quote! {}), // empty implementation
         HookBody::Custom => None,           // user-provided implementation
         HookBody::Owner => Some(quote! {
-            <Self as #me::owner::Owner>::require_owner();
+            #me::owner::Owner::require_owner(self);
         }),
         HookBody::Role(role) => Some(quote! {
             #me::rbac::Rbac::require_role(self, &#role);

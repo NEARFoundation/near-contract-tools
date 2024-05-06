@@ -43,11 +43,12 @@ pub struct Contract {
 impl Contract {
     #[init]
     pub fn new() -> Self {
-        <Self as ApprovalManager<_, _, _>>::init(approval::simple_multisig::Configuration::new(
-            1, 0,
-        ));
-
         let mut contract = Self { foo: 0 };
+
+        ApprovalManager::init(
+            &mut contract,
+            approval::simple_multisig::Configuration::new(1, 0),
+        );
 
         let predecessor = env::predecessor_account_id();
 

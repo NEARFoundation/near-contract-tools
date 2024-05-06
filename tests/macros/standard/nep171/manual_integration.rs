@@ -30,7 +30,7 @@ impl Hook<Contract, action::Nep171Transfer<'_>> for Contract {
         _args: &action::Nep171Transfer<'_>,
         f: impl FnOnce(&mut Contract) -> R,
     ) -> R {
-        Contract::require_unpaused();
+        contract.require_unpaused();
         f(contract)
     }
 }
@@ -53,7 +53,7 @@ impl Contract {
     }
 
     pub fn mint(&mut self) -> TokenId {
-        Self::require_unpaused();
+        self.require_unpaused();
 
         let token_id = format!("token_{}", self.next_token_id);
         self.next_token_id += 1;

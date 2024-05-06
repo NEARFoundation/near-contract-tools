@@ -57,23 +57,23 @@ pub trait EscrowInternal {
     }
 
     /// Inner function to retrieve the slot keyed by it's `Self::Id`
-    fn locked_slot(&self, id: &Self::Id) -> Slot<Self::State> {
+    fn slot_locked(id: &Self::Id) -> Slot<Self::State> {
         Self::root().field(StorageKey::Locked(id))
     }
 
     /// Read the state from the slot
     fn get_locked(&self, id: &Self::Id) -> Option<Self::State> {
-        self.locked_slot(id).read()
+        Self::slot_locked(id).read()
     }
 
     /// Set the state at `id` to `locked`
     fn set_locked(&mut self, id: &Self::Id, locked: &Self::State) {
-        self.locked_slot(id).write(locked);
+        Self::slot_locked(id).write(locked);
     }
 
     /// Clear the state at `id`
     fn set_unlocked(&mut self, id: &Self::Id) {
-        self.locked_slot(id).remove();
+        Self::slot_locked(id).remove();
     }
 }
 

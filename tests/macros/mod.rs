@@ -76,7 +76,7 @@ mod integration {
         }
 
         pub fn add_value_setter(&mut self, account_id: AccountId) {
-            Self::require_owner();
+            self.require_owner();
 
             self.add_role(&account_id, &Role::CanSetValue);
 
@@ -84,7 +84,7 @@ mod integration {
         }
 
         pub fn set_value(&mut self, value: u32) {
-            Self::require_unpaused();
+            self.require_unpaused();
             Self::require_role(&Role::CanSetValue);
 
             let old = self.value;
@@ -140,8 +140,8 @@ struct MigrateIntegration {
 
 impl MigrateHook for MigrateIntegration {
     fn on_migrate(old: Integration) -> Self {
-        Self::require_owner();
-        Self::require_unpaused();
+        old.require_owner();
+        old.require_unpaused();
 
         Self {
             new_value: "my string".to_string(),
@@ -153,7 +153,7 @@ impl MigrateHook for MigrateIntegration {
 #[near]
 impl MigrateIntegration {
     pub fn add_value_setter(&mut self, account_id: AccountId) {
-        Self::require_owner();
+        self.require_owner();
 
         self.add_role(&account_id, &Role::CanSetValue);
 
@@ -161,7 +161,7 @@ impl MigrateIntegration {
     }
 
     pub fn set_value(&mut self, value: u32) {
-        Self::require_unpaused();
+        self.require_unpaused();
         Self::require_role(&Role::CanSetValue);
 
         let old = self.moved_value;

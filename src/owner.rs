@@ -112,8 +112,28 @@ pub trait Owner {
     /// Updates proposed owner without any checks or emitting events.
     fn update_proposed_unchecked(&mut self, new: Option<AccountId>);
 
-    /// Same as require_owner but as a method.
-    fn assert_owner(&self);
+    /// Rejects if the predecessor is not the current owner.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use near_sdk::{AccountId, near, PanicOnDefault};
+    /// use near_sdk_contract_tools::{Owner, owner::Owner};
+    ///
+    /// #[derive(Owner, PanicOnDefault)]
+    /// #[near(contract_state)]
+    /// struct Contract {}
+    ///
+    /// #[near]
+    /// impl Contract {
+    ///     pub fn owner_only_function(&self) {
+    ///         self.require_owner();
+    ///
+    ///         // ...
+    ///     }
+    /// }
+    /// ```
+    fn require_owner(&self);
 
     /// Initializes the contract owner. Can only be called once.
     ///
@@ -142,29 +162,6 @@ pub trait Owner {
     /// }
     /// ```
     fn init(&mut self, owner_id: &AccountId);
-
-    /// Requires the predecessor to be the owner.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use near_sdk::{AccountId, near, PanicOnDefault};
-    /// use near_sdk_contract_tools::{Owner, owner::Owner};
-    ///
-    /// #[derive(Owner, PanicOnDefault)]
-    /// #[near(contract_state)]
-    /// struct Contract {}
-    ///
-    /// #[near]
-    /// impl Contract {
-    ///     pub fn owner_only(&self) {
-    ///         Self::require_owner();
-    ///
-    ///         // ...
-    ///     }
-    /// }
-    /// ```
-    fn require_owner();
 
     /// Removes the contract's owner. Can only be called by the current owner.
     ///
@@ -226,7 +223,7 @@ impl<T: OwnerInternal> Owner for T {
         proposed_owner.set(new.as_ref());
     }
 
-    fn assert_owner(&self) {
+    fn require_owner(&self) {
         require!(
             &env::predecessor_account_id()
                 == Self::slot_owner()
@@ -253,26 +250,15 @@ impl<T: OwnerInternal> Owner for T {
         .emit();
     }
 
-    fn require_owner() {
-        require!(
-            &env::predecessor_account_id()
-                == Self::slot_owner()
-                    .read()
-                    .as_ref()
-                    .unwrap_or_else(|| env::panic_str(NO_OWNER_FAIL_MESSAGE)),
-            ONLY_OWNER_FAIL_MESSAGE,
-        );
-    }
-
     fn renounce_owner(&mut self) {
-        Self::require_owner();
+        self.require_owner();
 
         self.update_proposed(None);
         self.update_owner(None);
     }
 
     fn propose_owner(&mut self, account_id: Option<AccountId>) {
-        Self::require_owner();
+        self.require_owner();
 
         self.update_proposed(account_id);
     }
@@ -312,7 +298,7 @@ pub mod hooks {
         C: Owner,
     {
         fn hook<R>(contract: &mut C, _args: &A, f: impl FnOnce(&mut C) -> R) -> R {
-            contract.assert_owner();
+            contract.require_owner();
             f(contract)
         }
     }
@@ -377,7 +363,7 @@ mod tests {
         }
 
         pub fn owner_only(&self) {
-            Self::require_owner();
+            self.require_owner();
         }
     }
 
