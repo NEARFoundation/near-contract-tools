@@ -36,7 +36,7 @@ const PAUSED_FAIL_MESSAGE: &str = "Disallowed while contract is paused";
     crate = "crate",
     macros = "near_sdk_contract_tools_macros"
 )]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum PauseEvent {
     /// Emitted when the contract is paused
     Pause,

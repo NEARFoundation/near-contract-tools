@@ -49,7 +49,7 @@ const NO_PROPOSED_OWNER_FAIL_MESSAGE: &str = "No proposed owner";
     crate = "crate",
     macros = "near_sdk_contract_tools_macros"
 )]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum OwnerEvent {
     /// Emitted when the current owner of the contract changes
     Transfer {
