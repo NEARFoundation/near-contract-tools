@@ -26,7 +26,6 @@ version = "3.0.0"
 # normal dependencies
 near-sdk = { version = "5.1.0", default-features = false }
 near-sdk-contract-tools-macros = { version = "=3.0.0", path = "./macros" }
-schemars = "0.8.19"
 thiserror = "1"
 
 # macro dependencies
@@ -54,7 +53,6 @@ missing-docs = "warn"
 [dependencies]
 near-sdk = { workspace = true, default-features = false, features = ["legacy"] }
 near-sdk-contract-tools-macros.workspace = true
-schemars.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
