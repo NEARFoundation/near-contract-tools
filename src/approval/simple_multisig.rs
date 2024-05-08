@@ -51,6 +51,10 @@ impl<Au: AccountAuthorizer> Configuration<Au> {
     }
 
     /// Is the given approval state still considered valid?
+    ///
+    /// # Panics
+    ///
+    /// - If the request timestamp is in the future.
     #[must_use]
     pub fn is_within_validity_period(&self, approval_state: &ApprovalState) -> bool {
         if self.validity_period_nanoseconds == 0 {

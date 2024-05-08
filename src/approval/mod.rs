@@ -195,7 +195,11 @@ where
     /// once.
     fn init(config: C);
 
-    /// Creates a new action request initialized with the given approval state
+    /// Creates a new action request initialized with the given approval state.
+    ///
+    /// # Errors
+    ///
+    /// - If the acting account is unauthorized.
     fn create_request(
         &mut self,
         action: A,
@@ -204,6 +208,11 @@ where
 
     /// Executes an action request and removes it from the collection if the
     /// approval state of the request is fulfilled.
+    ///
+    /// # Errors
+    ///
+    /// - If the acting account is unauthorized.
+    /// - If the request is ineligible for execution.
     fn execute_request(
         &mut self,
         request_id: u32,
@@ -211,16 +220,30 @@ where
 
     /// Is the given request ID able to be executed if such a request were to
     /// be initiated by an authorized account?
+    ///
+    /// # Errors
+    ///
+    /// - If the request is ineligible for execution.
     fn is_approved_for_execution(request_id: u32) -> Result<(), C::ExecutionEligibilityError>;
 
     /// Tries to approve the action request designated by the given request ID
     /// with the given arguments. Panics if the request ID does not exist.
+    ///
+    /// # Errors
+    ///
+    /// - If the acting account is unauthorized.
+    /// - If another error was encountered when approving the request.
     fn approve_request(
         &mut self,
         request_id: u32,
     ) -> Result<(), ApprovalError<C::AuthorizationError, C::ApprovalError>>;
 
     /// Tries to remove the action request indicated by `request_id`.
+    ///
+    /// # Errors
+    ///
+    /// - If the acting account is unauthorized.
+    /// - If the request cannot be removed.
     fn remove_request(
         &mut self,
         request_id: u32,

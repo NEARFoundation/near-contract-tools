@@ -158,6 +158,7 @@ mod tests {
             .predecessor_account_id(alice())
             .build());
 
+        #[allow(clippy::cast_possible_truncation)]
         contract.use_storage(
             one_near
                 .as_yoctonear()

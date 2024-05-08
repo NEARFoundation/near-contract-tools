@@ -62,6 +62,7 @@ mod integration {
         pub value: u32,
     }
 
+    #[allow(clippy::needless_pass_by_value)]
     #[near]
     impl Integration {
         #[init]
