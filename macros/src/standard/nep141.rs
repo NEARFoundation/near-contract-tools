@@ -45,19 +45,11 @@ pub fn expand(meta: Nep141Meta) -> Result<TokenStream, darling::Error> {
         }
     });
 
-    let mint_hook = mint_hook
-        .map(|h| quote! { #h })
-        .unwrap_or_else(|| quote! { () });
-    let transfer_hook = transfer_hook
-        .map(|h| quote! { #h })
-        .unwrap_or_else(|| quote! { () });
-    let burn_hook = burn_hook
-        .map(|h| quote! { #h })
-        .unwrap_or_else(|| quote! { () });
+    let mint_hook = mint_hook.map_or_else(|| quote! { () }, |h| quote! { #h });
+    let transfer_hook = transfer_hook.map_or_else(|| quote! { () }, |h| quote! { #h });
+    let burn_hook = burn_hook.map_or_else(|| quote! { () }, |h| quote! { #h });
 
-    let default_hook = all_hooks
-        .map(|h| quote! { #h })
-        .unwrap_or_else(|| quote! { () });
+    let default_hook = all_hooks.map_or_else(|| quote! { () }, |h| quote! { #h });
 
     Ok(quote! {
         impl #imp #me::standard::nep141::Nep141ControllerInternal for #ident #ty #wher {

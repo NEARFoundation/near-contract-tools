@@ -26,35 +26,51 @@ pub trait Action<Cont: ?Sized> {
     fn execute(self, contract: &mut Cont) -> Self::Output;
 }
 
-/// Defines the operating parameters for an ApprovalManager and performs
-/// approvals
+/// Defines the operating parameters for an `ApprovalManager` and performs
+/// approvals.
 pub trait ApprovalConfiguration<A, S> {
-    /// Errors when approving a request
+    /// Errors when approving a request.
     type ApprovalError;
-    /// Errors when removing a request
+    /// Errors when removing a request.
     type RemovalError;
-    /// Errors when authorizing an account
+    /// Errors when authorizing an account.
     type AuthorizationError;
-    /// Errors when evaluating a request for execution candidacy
+    /// Errors when evaluating a request for execution candidacy.
     type ExecutionEligibilityError;
 
     /// Has the request reached full approval?
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if the request is not approved for execution.
     fn is_approved_for_execution(
         &self,
         action_request: &ActionRequest<A, S>,
     ) -> Result<(), Self::ExecutionEligibilityError>;
 
     /// Can this request be removed by an allowed account?
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if the request cannot be removed.
     fn is_removable(&self, action_request: &ActionRequest<A, S>) -> Result<(), Self::RemovalError>;
 
     /// Is the account allowed to execute, approve, or remove this request?
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if the account is not allowed to perform such an action.
     fn is_account_authorized(
         &self,
         account_id: &AccountId,
         action_request: &ActionRequest<A, S>,
     ) -> Result<(), Self::AuthorizationError>;
 
-    /// Modify action_request.approval_state in-place to increase approval
+    /// Modify `action_request.approval_state` in-place to increase approval.
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if the request cannot be approved.
     fn try_approve_with_authorized_account(
         &self,
         account_id: AccountId,

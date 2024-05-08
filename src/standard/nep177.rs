@@ -226,6 +226,10 @@ pub trait Nep177ControllerInternal {
 /// Functions for managing non-fungible tokens with attached metadata, NEP-177.
 pub trait Nep177Controller {
     /// Mint a new token with metadata.
+    ///
+    /// # Errors
+    /// 
+    /// - If the token ID already exists.
     fn mint_with_metadata(
         &mut self,
         token_id: &TokenId,
@@ -234,6 +238,11 @@ pub trait Nep177Controller {
     ) -> Result<(), Nep171MintError>;
 
     /// Burn a token with metadata.
+    /// 
+    /// # Errors
+    /// 
+    /// - If the token ID does not exist.
+    /// - If the token is not owned by the expected owner.
     fn burn_with_metadata(
         &mut self,
         token_id: &TokenId,
@@ -249,6 +258,10 @@ pub trait Nep177Controller {
     );
 
     /// Sets the metadata for a token ID and emits an [`Nep171Event::NftMetadataUpdate`] event.
+    /// 
+    /// # Errors
+    /// 
+    /// - If the token does not exist.
     fn set_token_metadata(
         &mut self,
         token_id: &TokenId,

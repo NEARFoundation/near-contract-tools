@@ -1,3 +1,4 @@
+#![allow(clippy::must_use_candidate)]
 //! Contract upgrade functions that work as expected in conjunction with
 //! `#[near]`.
 

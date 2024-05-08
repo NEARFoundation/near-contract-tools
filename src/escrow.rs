@@ -1,15 +1,19 @@
-//! Escrow pattern implements locking functionality over some arbitrary storage key.
+//! Escrow pattern implements locking functionality over some arbitrary storage
+//! key.
 //!
-//! Upon locking something, it adds a flag in the store that some item on some `id` is locked with some `state`.
-//! This allows you to verify if an item is locked, and add some additional functionality to unlock the item.
+//! Upon locking something, it adds a flag in the store that some item on some
+//! `id` is locked with some `state`. This allows you to verify if an item is
+//! locked, and add some additional functionality to unlock the item.
 //!
 //! The crate exports a [derive macro](near_sdk_contract_tools_macros::Escrow)
 //! that derives a default implementation for escrow.
 //!
 //! # Safety
-//! The state for this contract is stored under the [root][EscrowInternal::root], make sure you dont
-//! accidentally collide these storage entries in your contract.
-//! You can change the key this is stored under by providing [storage_key] to the macro.
+//!
+//! The state for this contract is stored under the
+//! [`root`][EscrowInternal::root], make sure you don't accidentally collide
+//! these storage entries in your contract. You can change the key this is
+//! stored under by providing `storage_key` to the macro.
 use crate::{event, standard::nep297::Event};
 use crate::{slot::Slot, DefaultStorageKey};
 use near_sdk::{
@@ -30,7 +34,7 @@ enum StorageKey<'a, T> {
     Locked(&'a T),
 }
 
-/// Emit the state of an escrow lock and whether it was locked or unlocked
+/// Emit the state of an escrow lock and whether it was locked or unlocked.
 #[event(
     standard = "x-escrow",
     version = "1.0.0",
@@ -38,59 +42,64 @@ enum StorageKey<'a, T> {
     macros = "crate"
 )]
 pub struct Lock<Id: Serialize, State: Serialize> {
-    /// The identifier for a lock
+    /// The identifier for a lock.
     pub id: Id,
-    /// If the lock was locked or unlocked, and any state along with it
+    /// If the lock was locked or unlocked, and any state along with it.
     pub locked: Option<State>,
 }
 
-/// Inner storage modifiers and functionality required for escrow to succeed
+/// Inner storage modifiers and functionality required for escrow to succeed.
 pub trait EscrowInternal {
-    /// Identifier over which the escrow exists
+    /// Identifier over which the escrow exists.
     type Id: BorshSerialize;
-    /// State stored inside the lock
+    /// State stored inside the lock.
     type State: BorshSerialize + BorshDeserialize;
 
-    /// Retrieve the state root
+    /// Retrieve the state root.
     fn root() -> Slot<()> {
         Slot::root(DefaultStorageKey::Escrow)
     }
 
-    /// Inner function to retrieve the slot keyed by it's `Self::Id`
+    /// Inner function to retrieve the slot keyed by its [`Id`](EscrowInternal::Id).
     fn locked_slot(&self, id: &Self::Id) -> Slot<Self::State> {
         Self::root().field(StorageKey::Locked(id))
     }
 
-    /// Read the state from the slot
+    /// Read the state from the slot.
     fn get_locked(&self, id: &Self::Id) -> Option<Self::State> {
         self.locked_slot(id).read()
     }
 
-    /// Set the state at `id` to `locked`
+    /// Set the state at `id` to `locked`.
     fn set_locked(&mut self, id: &Self::Id, locked: &Self::State) {
         self.locked_slot(id).write(locked);
     }
 
-    /// Clear the state at `id`
+    /// Clear the state at `id`.
     fn set_unlocked(&mut self, id: &Self::Id) {
         self.locked_slot(id).remove();
     }
 }
 
-/// Some escrowable capabilities, with a simple locking/unlocking mechanism
-/// If you add additional `Approve` capabilities here, you can make use of a step-wise locking system.
+/// Some escrowable capabilities, with a simple locking/unlocking mechanism.
+/// 
+/// If you add additional `Approve` capabilities here, you can make use of a
+/// step-wise locking system.
 pub trait Escrow {
-    /// Identifier over which the escrow exists
+    /// Identifier over which the escrow exists.
     type Id: BorshSerialize;
-    /// State stored inside the lock
+    /// State stored inside the lock.
     type State: BorshSerialize + BorshDeserialize;
 
-    /// Lock some `Self::State` by it's `Self::Id` within the store
+    /// Lock some [`State`](Escrow::State) by its [`Id`](Escrow::Id) within the
+    /// store.
     fn lock(&mut self, id: &Self::Id, state: &Self::State);
 
-    /// Unlock and release some `Self::State` by it's `Self::Id`
+    /// Unlock and release some [`State`](Escrow::State) by its
+    /// [`Id`](Escrow::Id).
     ///
-    /// Optionally, you can provide a handler which would allow you to inject logic if you should unlock or not.
+    /// Optionally, you can provide a handler which would allow you to inject
+    /// logic if you should unlock or not.
     fn unlock(&mut self, id: &Self::Id, unlock_handler: impl FnOnce(&Self::State) -> bool);
 
     /// Check if the item is locked
@@ -127,8 +136,8 @@ where
     }
 }
 
-/// A wrapper trait allowing all implementations of `State` and `Id` that implement [`serde::Serialize`]
-/// to emit an event on success if they want to.
+/// A wrapper trait allowing all implementations of `State` and `Id` that
+/// implement [`serde::Serialize`] to emit an event on success if they want to.
 pub trait EventEmittedOnEscrow<Id: Serialize, State: Serialize> {
     /// Optionally implement an event on success of lock
     fn lock_emit(&mut self, id: &Id, state: &State);

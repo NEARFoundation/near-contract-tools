@@ -208,6 +208,11 @@ pub trait Nep141Controller {
 
     /// Removes tokens from an account and decreases total supply. No event
     /// emission or hook invocation.
+    ///
+    /// # Errors
+    ///
+    /// - Account balance underflow.
+    /// - Total supply underflow.
     fn withdraw_unchecked(
         &mut self,
         account_id: &AccountIdRef,
@@ -216,6 +221,11 @@ pub trait Nep141Controller {
 
     /// Increases the token balance of an account. Updates total supply. No
     /// event emission or hook invocation.
+    ///
+    /// # Errors
+    ///
+    /// - Account balance overflow.
+    /// - Total supply overflow.
     fn deposit_unchecked(
         &mut self,
         account_id: &AccountIdRef,
@@ -225,6 +235,11 @@ pub trait Nep141Controller {
     /// Decreases the balance of `sender_account_id` by `amount` and increases
     /// the balance of `receiver_account_id` by the same. No change to total
     /// supply. No event emission or hook invocation.
+    ///
+    /// # Errors
+    ///
+    /// - Receiver balance overflow.
+    /// - Sender balance underflow.
     fn transfer_unchecked(
         &mut self,
         sender_account_id: &AccountIdRef,
@@ -234,14 +249,29 @@ pub trait Nep141Controller {
 
     /// Performs an NEP-141 token transfer, with event emission. Invokes
     /// [`Nep141Controller::TransferHook`].
+    ///
+    /// # Errors
+    ///
+    /// - Receiver balance overflow.
+    /// - Sender balance underflow.
     fn transfer(&mut self, transfer: &Nep141Transfer<'_>) -> Result<(), TransferError>;
 
     /// Performs an NEP-141 token mint, with event emission. Invokes
     /// [`Nep141Controller::MintHook`].
+    ///
+    /// # Errors
+    ///
+    /// - Account balance overflow.
+    /// - Total supply overflow.
     fn mint(&mut self, mint: &Nep141Mint<'_>) -> Result<(), DepositError>;
 
     /// Performs an NEP-141 token burn, with event emission. Invokes
     /// [`Nep141Controller::BurnHook`].
+    ///
+    /// # Errors
+    ///
+    /// - Account balance underflow.
+    /// - Total supply underflow.
     fn burn(&mut self, burn: &Nep141Burn<'_>) -> Result<(), WithdrawError>;
 }
 

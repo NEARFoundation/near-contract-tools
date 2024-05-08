@@ -112,7 +112,7 @@ pub trait Owner {
     /// Updates proposed owner without any checks or emitting events.
     fn update_proposed_unchecked(&mut self, new: Option<AccountId>);
 
-    /// Same as require_owner but as a method.
+    /// Same as [`require_owner`](Owner::require_owner) but as a method.
     fn assert_owner(&self);
 
     /// Initializes the contract owner. Can only be called once.
@@ -365,6 +365,7 @@ mod tests {
     #[near(contract_state)]
     struct Contract {}
 
+    #[allow(clippy::unused_self, clippy::needless_pass_by_value)]
     #[near]
     impl Contract {
         #[init]

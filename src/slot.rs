@@ -96,12 +96,20 @@ impl<T> Slot<T> {
 
 impl<T: BorshSerialize> Slot<T> {
     /// Writes a value to the managed storage slot.
+    ///
+    /// # Panics
+    ///
+    /// If Borsh serialization fails.
     pub fn write(&mut self, value: &T) -> bool {
         self.write_raw(&borsh::to_vec(value).unwrap())
     }
 
     /// Writes a value to the managed storage slot which is dereferenced from
     /// the target type.
+    ///
+    /// # Panics
+    ///
+    /// If Borsh serialization fails.
     pub fn write_deref<U: BorshSerialize + ?Sized>(&mut self, value: &U) -> bool
     where
         T: Deref<Target = U>,

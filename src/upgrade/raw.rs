@@ -25,6 +25,7 @@ use super::PostUpgrade;
 ///
 /// Requires that `near_sdk::env::input()` contains the plain, raw bytes of a
 /// valid WebAssembly smart contract.
+#[allow(clippy::needless_pass_by_value)]
 pub unsafe fn upgrade(post_upgrade: PostUpgrade) {
     // Create a promise batch
     let promise_id = sys::promise_batch_create(

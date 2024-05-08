@@ -140,12 +140,12 @@ pub fn expand(meta: Nep297Meta) -> Result<TokenStream, darling::Error> {
     let mut e = darling::Error::accumulator();
 
     let mut no_duplicate_names = HashSet::<&String>::new();
-    for used_name in used_names.iter() {
+    for used_name in &used_names {
         let fresh_insertion = no_duplicate_names.insert(used_name);
         if !fresh_insertion {
             e.push(darling::Error::custom(format!(
                 "Event name collision: `{used_name}`",
-            )))
+            )));
         }
     }
 

@@ -76,7 +76,7 @@ pub enum PromiseAction {
 }
 
 /// A native protocol-level transaction that (de)serializes into many different
-/// formats
+/// formats.
 #[derive(Eq, PartialEq, Clone, Debug)]
 #[near(serializers = [borsh, json])]
 pub struct NativeTransactionAction {

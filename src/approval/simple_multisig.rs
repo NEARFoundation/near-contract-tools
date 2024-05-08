@@ -1,5 +1,7 @@
 //! Simple multi-signature wallet component. Generic over approvable actions.
-//! Use with NativeTransactionAction for multisig over native transactions.
+//! Use with
+//! [`NativeTransactionAction`](super::native_transaction_action::NativeTransactionAction)
+//! for multisig over native transactions.
 
 use std::marker::PhantomData;
 
@@ -9,12 +11,16 @@ use thiserror::Error;
 use super::{ActionRequest, ApprovalConfiguration};
 
 /// Check which accounts are eligible to submit approvals to an
-/// [ApprovalManager](super::ApprovalManager)
+/// [`ApprovalManager`](super::ApprovalManager)
 pub trait AccountAuthorizer {
     /// Why can this account not be authorized?
     type AuthorizationError;
 
     /// Determines whether an account ID is allowed to submit an approval
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the account is not authorized.
     fn is_account_authorized(account_id: &AccountId) -> Result<(), Self::AuthorizationError>;
 }
 
@@ -73,7 +79,7 @@ impl Default for ApprovalState {
 }
 
 impl ApprovalState {
-    /// Creates an ApprovalState with the current network timestamp
+    /// Creates an [`ApprovalState`] with the current network timestamp.
     pub fn new() -> Self {
         Self {
             approved_by: Vec::new(),
@@ -82,7 +88,7 @@ impl ApprovalState {
     }
 }
 
-/// If a request has expired, some actions may not be performed
+/// If a request has expired, some actions may not be performed.
 #[derive(Error, Clone, Debug)]
 #[error("Validity period exceeded")]
 pub struct RequestExpiredError;
@@ -90,10 +96,10 @@ pub struct RequestExpiredError;
 /// Why might a simple multisig approval attempt fail?
 #[derive(Error, Clone, Debug)]
 pub enum ApprovalError {
-    /// The account has already approved this action request
+    /// The account has already approved this action request.
     #[error("Already approved by this account")]
     AlreadyApprovedByAccount,
-    /// The request has expired and cannot be approved or executed
+    /// The request has expired and cannot be approved or executed.
     #[error(transparent)]
     RequestExpired(#[from] RequestExpiredError),
 }

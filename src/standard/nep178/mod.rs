@@ -162,6 +162,12 @@ pub trait Nep178Controller {
         Self: Sized;
 
     /// Approve a token for transfer by a delegated account.
+    ///
+    /// # Errors
+    ///
+    /// - If the acting account is not authorized to create approvals for the token.
+    /// - If the target account is already approved for the token.
+    /// - If the token exceeds the maximum number of approvals.
     fn approve(&mut self, action: &Nep178Approve<'_>) -> Result<ApprovalId, Nep178ApproveError>;
 
     /// Approve a token without checking if the account is already approved or
@@ -169,6 +175,11 @@ pub trait Nep178Controller {
     fn approve_unchecked(&mut self, token_id: &TokenId, account_id: &AccountIdRef) -> ApprovalId;
 
     /// Revoke approval for an account to transfer token.
+    ///
+    /// # Errors
+    ///
+    /// - If the acting account is not authorized to revoke approvals for the token.
+    /// - If the target account is not approved for the token.
     fn revoke(&mut self, action: &Nep178Revoke<'_>) -> Result<(), Nep178RevokeError>;
 
     /// Revoke approval for an account to transfer token without checking if
@@ -176,6 +187,10 @@ pub trait Nep178Controller {
     fn revoke_unchecked(&mut self, token_id: &TokenId, account_id: &AccountIdRef);
 
     /// Revoke all approvals for a token.
+    ///
+    /// # Errors
+    ///
+    /// - If the acting account is not authorized to revoke approvals for the token.
     fn revoke_all(&mut self, action: &Nep178RevokeAll<'_>) -> Result<(), Nep178RevokeAllError>;
 
     /// Revoke all approvals for a token without checking current owner.

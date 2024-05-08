@@ -142,6 +142,13 @@ pub trait Nep171Controller {
     /// call to `nft_transfer`. Checks that the transfer is valid using
     /// [`CheckExternalTransfer::check_external_transfer`] before performing
     /// the transfer. Emits events and runs relevant hooks.
+    ///
+    /// # Errors
+    ///
+    /// - If the token does not exist.
+    /// - If the sender is not approved.
+    /// - If the sender is the receiver.
+    /// - If the correct account does not own the token.
     fn external_transfer(&mut self, transfer: &Nep171Transfer) -> Result<(), Nep171TransferError>
     where
         Self: Sized;
@@ -162,6 +169,10 @@ pub trait Nep171Controller {
 
     /// Mints a new token `token_id` to `owner_id`. Emits events and runs
     /// relevant hooks.
+    ///
+    /// # Errors
+    ///
+    /// - If the token ID already exists.
     fn mint(&mut self, action: &Nep171Mint<'_>) -> Result<(), Nep171MintError>;
 
     /// Mints a new token `token_id` to `owner_id` without checking if the
@@ -170,6 +181,11 @@ pub trait Nep171Controller {
 
     /// Burns tokens `token_ids` owned by `current_owner_id`. Emits events and
     /// runs relevant hooks.
+    ///
+    /// # Errors
+    ///
+    /// - If the token does not exist.
+    /// - If the token is not owned by the expected owner.
     fn burn(&mut self, action: &Nep171Burn<'_>) -> Result<(), Nep171BurnError>;
 
     /// Burns tokens `token_ids` without checking the owners. Does not emit
@@ -197,6 +213,10 @@ pub enum Nep171TransferAuthorization {
 pub trait CheckExternalTransfer<C> {
     /// Checks if a transfer is valid. Returns the account ID of the current
     /// owner of the token.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the external transfer should not be performed.
     fn check_external_transfer(
         contract: &C,
         transfer: &Nep171Transfer,
@@ -408,6 +428,10 @@ pub struct Token {
 /// Trait for NFT extensions to load token metadata.
 pub trait LoadTokenMetadata<C> {
     /// Load token metadata into `metadata`.
+    ///
+    /// # Errors
+    ///
+    /// If the token metadata could not be loaded.
     fn load(
         contract: &C,
         token_id: &TokenId,

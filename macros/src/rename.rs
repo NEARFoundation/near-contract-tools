@@ -36,7 +36,7 @@ impl RenameStrategy {
 impl FromMeta for RenameStrategy {
     fn from_string(value: &str) -> darling::Result<Self> {
         RenameStrategy::try_from(value)
-            .map_err(|_| darling::Error::custom("Invalid rename strategy"))
+            .map_err(|()| darling::Error::custom("Invalid rename strategy"))
     }
 }
 

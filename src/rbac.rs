@@ -175,6 +175,10 @@ impl Iter {
     }
 }
 
+// iter.nth always takes a usize, so we truncation unavoidable.
+// However, it is vanishingly unlikely that someone will have over u32::MAX
+// different roles.
+#[allow(clippy::cast_possible_truncation)]
 impl Iterator for Iter {
     type Item = AccountId;
 

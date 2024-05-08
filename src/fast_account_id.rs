@@ -77,6 +77,8 @@ impl TryFrom<&str> for FastAccountId {
 
 impl BorshSerialize for FastAccountId {
     fn serialize<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
+        // A valid NEAR account ID cannot be longer than 64.
+        #[allow(clippy::cast_possible_truncation)]
         let len: u8 = self.0.len() as u8;
         writer.write_all(&[len])?;
         let compressed = compress_account_id(&self.0).ok_or(std::io::ErrorKind::InvalidData)?;
@@ -161,6 +163,8 @@ fn compress_account_id(account_id: &str) -> Option<Vec<u8>> {
 
     let mut i = 0;
     for c in account_id.as_bytes() {
+        // ALPHABET is not that long.
+        #[allow(clippy::cast_possible_truncation)]
         let index = char_index(*c)? as u8;
         append_sub_byte(&mut v, i, index, 6);
         i += 6;

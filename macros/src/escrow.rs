@@ -43,9 +43,7 @@ pub fn expand(meta: EscrowMeta) -> Result<TokenStream, darling::Error> {
         }
     });
 
-    let state = state
-        .map(|state| quote! { #state })
-        .unwrap_or_else(|| quote! { () });
+    let state = state.map_or_else(|| quote! { () }, |state| quote! { #state });
 
     Ok(quote! {
         impl #imp #me::escrow::EscrowInternal for #ident #ty #wher {

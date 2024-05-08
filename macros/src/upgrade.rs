@@ -93,15 +93,9 @@ pub fn expand(meta: UpgradeMeta) -> Result<TokenStream, darling::Error> {
     // Defaults are defined in main crate.
     // I don't think these defaults can be easily defined using
     // #[darling(default = "...")] because they are different types.
-    let migrate_method_name = migrate_method_name
-        .map(|e| quote! { #e })
-        .unwrap_or_else(|| quote! { #me::upgrade::DEFAULT_POST_UPGRADE_METHOD_NAME });
-    let migrate_method_args = migrate_method_args
-        .map(|e| quote! { #e })
-        .unwrap_or_else(|| quote! { #me::upgrade::DEFAULT_POST_UPGRADE_METHOD_ARGS });
-    let migrate_minimum_gas = migrate_minimum_gas
-        .map(|e| quote! { #e })
-        .unwrap_or_else(|| quote! { #me::upgrade::DEFAULT_POST_UPGRADE_MINIMUM_GAS });
+    let migrate_method_name = migrate_method_name.map_or_else(|| quote! { #me::upgrade::DEFAULT_POST_UPGRADE_METHOD_NAME }, |e| quote! { #e });
+    let migrate_method_args = migrate_method_args.map_or_else(|| quote! { #me::upgrade::DEFAULT_POST_UPGRADE_METHOD_ARGS }, |e| quote! { #e });
+    let migrate_minimum_gas = migrate_minimum_gas.map_or_else(|| quote! { #me::upgrade::DEFAULT_POST_UPGRADE_MINIMUM_GAS }, |e| quote! { #e });
 
     let hook_implementation = match &hook {
         // Should we generate an UpgradeHook implementation with body?
