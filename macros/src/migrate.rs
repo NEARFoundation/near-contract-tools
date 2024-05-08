@@ -32,7 +32,10 @@ pub fn expand(meta: MigrateMeta) -> Result<TokenStream, darling::Error> {
 
     let (imp, ty, wh) = generics.split_for_impl();
 
-    let to = to.map_or_else(|| quote! { Self }.to_token_stream(), |t| t.to_token_stream());
+    let to = to.map_or_else(
+        || quote! { Self }.to_token_stream(),
+        |t| t.to_token_stream(),
+    );
 
     Ok(quote! {
         impl #imp #me::migrate::MigrateController for #ident #ty #wh {

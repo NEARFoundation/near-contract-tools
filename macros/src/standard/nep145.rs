@@ -42,7 +42,8 @@ pub fn expand(meta: Nep145Meta) -> Result<TokenStream, darling::Error> {
     });
 
     let all_hooks = all_hooks.map_or_else(|| quote! { () }, |h| quote! { #h });
-    let force_unregister_hook = force_unregister_hook.map_or_else(|| quote! { () }, |h| quote! { #h });
+    let force_unregister_hook =
+        force_unregister_hook.map_or_else(|| quote! { () }, |h| quote! { #h });
 
     Ok(quote! {
         impl #imp #me::standard::nep145::Nep145ControllerInternal for #ident #ty #wher {

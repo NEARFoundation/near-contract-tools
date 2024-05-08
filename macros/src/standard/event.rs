@@ -23,7 +23,7 @@ pub struct EventAttributeMeta {
 
 pub fn event_attribute(
     attr: EventAttributeMeta,
-    item: Item,
+    item: &Item,
 ) -> Result<TokenStream, darling::Error> {
     let EventAttributeMeta {
         standard,

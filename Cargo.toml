@@ -46,7 +46,6 @@ tokio = "1"
 [workspace.lints.clippy]
 pedantic = "warn"
 module-name-repetitions = "allow"
-wildcard-imports = "allow"
 
 [workspace.lints.rust]
 missing-docs = "warn"
