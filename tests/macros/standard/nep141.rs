@@ -94,24 +94,14 @@ fn nep141_transfer() {
 
     assert_eq!(
         ft.transfers.pop(),
-        Some(
-            borsh::to_vec(&Nep141Transfer {
-                sender_id: alice.clone().into(),
-                receiver_id: bob.clone().into(),
-                amount: 50,
-                memo: None,
-                msg: None,
-                revert: false,
-            })
-            .unwrap()
-        )
+        Some(borsh::to_vec(&Nep141Transfer::new(50, alice.clone(), bob.clone())).unwrap())
     );
 
     let expected_hook_execution_order = vec!["before_transfer", "after_transfer"];
     let actual_hook_execution_order = ft.hooks.to_vec();
     assert_eq!(expected_hook_execution_order, actual_hook_execution_order);
 
-    assert_eq!(ft.ft_balance_of(alice.clone()).0, 50);
-    assert_eq!(ft.ft_balance_of(bob.clone()).0, 70);
+    assert_eq!(ft.ft_balance_of(alice).0, 50);
+    assert_eq!(ft.ft_balance_of(bob).0, 70);
     assert_eq!(ft.ft_total_supply().0, 120);
 }

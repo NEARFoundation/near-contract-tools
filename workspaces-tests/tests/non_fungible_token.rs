@@ -31,22 +31,9 @@ const RECEIVER_WASM: &[u8] =
 
 const THIRTY_TERAGAS: Gas = Gas::from_gas(30_000_000_000_000);
 
-fn token_meta(id: String) -> near_sdk::serde_json::Value {
-    near_sdk::serde_json::to_value(TokenMetadata {
-        title: Some(id),
-        description: Some("description".to_string()),
-        media: None,
-        media_hash: None,
-        copies: None,
-        issued_at: None,
-        expires_at: None,
-        starts_at: None,
-        updated_at: None,
-        extra: None,
-        reference: None,
-        reference_hash: None,
-    })
-    .unwrap()
+fn token_meta(id: impl Into<String>) -> near_sdk::serde_json::Value {
+    near_sdk::serde_json::to_value(TokenMetadata::new().title(id).description("description"))
+        .unwrap()
 }
 
 async fn setup_balances(
@@ -165,7 +152,7 @@ async fn create_and_mint_with_metadata_and_enumeration() {
             token_id: "token_0".to_string(),
             owner_id: alice.id().clone(),
             extensions_metadata: [
-                ("metadata".to_string(), token_meta("token_0".to_string())),
+                ("metadata".to_string(), token_meta("token_0")),
                 ("approved_account_ids".to_string(), json!({})),
                 ("funky_data".to_string(), json!({"funky": "data"})),
             ]
@@ -178,7 +165,7 @@ async fn create_and_mint_with_metadata_and_enumeration() {
             token_id: "token_1".to_string(),
             owner_id: bob.id().clone(),
             extensions_metadata: [
-                ("metadata".to_string(), token_meta("token_1".to_string())),
+                ("metadata".to_string(), token_meta("token_1")),
                 ("approved_account_ids".to_string(), json!({})),
                 ("funky_data".to_string(), json!({"funky": "data"})),
             ]
@@ -191,7 +178,7 @@ async fn create_and_mint_with_metadata_and_enumeration() {
             token_id: "token_2".to_string(),
             owner_id: charlie.id().clone(),
             extensions_metadata: [
-                ("metadata".to_string(), token_meta("token_2".to_string())),
+                ("metadata".to_string(), token_meta("token_2")),
                 ("approved_account_ids".to_string(), json!({})),
                 ("funky_data".to_string(), json!({"funky": "data"})),
             ]
@@ -805,7 +792,7 @@ async fn transfer_approval_success() {
         token_id: "token_0".into(),
         owner_id: alice.id().clone(),
         extensions_metadata: [
-            ("metadata".to_string(), token_meta("token_0".to_string())),
+            ("metadata".to_string(), token_meta("token_0")),
             (
                 "approved_account_ids".to_string(),
                 json!({
@@ -850,7 +837,7 @@ async fn transfer_approval_success() {
             token_id: "token_0".to_string(),
             owner_id: charlie.id().clone(),
             extensions_metadata: [
-                ("metadata".to_string(), token_meta("token_0".to_string())),
+                ("metadata".to_string(), token_meta("token_0")),
                 ("approved_account_ids".to_string(), json!({})),
                 ("funky_data".to_string(), json!({"funky": "data"})),
             ]

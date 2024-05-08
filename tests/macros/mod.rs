@@ -528,11 +528,7 @@ mod owned_fungible_token {
         pub fn mint(&mut self, amount: U128) {
             Nep141Controller::mint(
                 self,
-                &Nep141Mint {
-                    amount: amount.into(),
-                    receiver_id: env::predecessor_account_id().into(),
-                    memo: None,
-                },
+                &Nep141Mint::new(amount.0, env::predecessor_account_id()),
             )
             .unwrap();
         }

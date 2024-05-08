@@ -13,13 +13,11 @@ impl Contract {
         let token_id = format!("token_{}", self.next_token_id);
         self.next_token_id += 1;
 
-        let action = Nep171Mint {
-            token_ids: vec![token_id.clone()],
-            receiver_id: env::predecessor_account_id().into(),
-            memo: None,
-        };
-        Nep171Controller::mint(self, &action)
-            .unwrap_or_else(|e| env::panic_str(&format!("Minting failed: {e}")));
+        Nep171Controller::mint(
+            self,
+            &Nep171Mint::new(vec![token_id.clone()], env::predecessor_account_id()),
+        )
+        .unwrap_or_else(|e| env::panic_str(&format!("Minting failed: {e}")));
 
         token_id
     }

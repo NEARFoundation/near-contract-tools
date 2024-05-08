@@ -53,6 +53,38 @@ pub struct Nep141Transfer<'a> {
 }
 
 impl<'a> Nep141Transfer<'a> {
+    /// Create a new transfer action.
+    pub fn new(
+        amount: u128,
+        sender_id: impl Into<Cow<'a, AccountIdRef>>,
+        receiver_id: impl Into<Cow<'a, AccountIdRef>>,
+    ) -> Self {
+        Self {
+            sender_id: sender_id.into(),
+            receiver_id: receiver_id.into(),
+            amount,
+            memo: None,
+            msg: None,
+            revert: false,
+        }
+    }
+
+    /// Add a memo string.
+    pub fn memo(self, memo: impl Into<Cow<'a, str>>) -> Self {
+        Self {
+            memo: Some(memo.into()),
+            ..self
+        }
+    }
+
+    /// Add a message string.
+    pub fn msg(self, msg: impl Into<Cow<'a, str>>) -> Self {
+        Self {
+            msg: Some(msg.into()),
+            ..self
+        }
+    }
+
     /// Returns `true` if this transfer comes from a `ft_transfer_call`
     /// call, `false` otherwise.
     pub fn is_transfer_call(&self) -> bool {
@@ -72,6 +104,25 @@ pub struct Nep141Mint<'a> {
     pub memo: Option<Cow<'a, str>>,
 }
 
+impl<'a> Nep141Mint<'a> {
+    /// Create a new mint action.
+    pub fn new(amount: u128, receiver_id: impl Into<Cow<'a, AccountIdRef>>) -> Self {
+        Self {
+            amount,
+            receiver_id: receiver_id.into(),
+            memo: None,
+        }
+    }
+
+    /// Add a memo string.
+    pub fn memo(self, memo: impl Into<Cow<'a, str>>) -> Self {
+        Self {
+            memo: Some(memo.into()),
+            ..self
+        }
+    }
+}
+
 /// Describes a burn operation.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[near]
@@ -82,6 +133,25 @@ pub struct Nep141Burn<'a> {
     pub owner_id: Cow<'a, AccountIdRef>,
     /// Optional memo string.
     pub memo: Option<Cow<'a, str>>,
+}
+
+impl<'a> Nep141Burn<'a> {
+    /// Create a new burn action.
+    pub fn new(amount: u128, owner_id: impl Into<Cow<'a, AccountIdRef>>) -> Self {
+        Self {
+            amount,
+            owner_id: owner_id.into(),
+            memo: None,
+        }
+    }
+
+    /// Add a memo string.
+    pub fn memo(self, memo: impl Into<Cow<'a, str>>) -> Self {
+        Self {
+            memo: Some(memo.into()),
+            ..self
+        }
+    }
 }
 
 /// Internal functions for [`Nep141Controller`]. Using these methods may result in unexpected behavior.

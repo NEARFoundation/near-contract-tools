@@ -24,11 +24,10 @@ where
             contract.with_tokens_for_owner(&action.account_id, |t| t.iter().collect::<Vec<_>>());
 
         contract
-            .burn(&Nep171Burn {
-                token_ids,
-                owner_id: action.account_id.clone(),
-                memo: Some("storage forced unregistration".into()),
-            })
+            .burn(
+                &Nep171Burn::new(token_ids, action.account_id.clone())
+                    .memo("storage forced unregistration"),
+            )
             .unwrap_or_else(|e| {
                 near_sdk::env::panic_str(&format!(
                     "Failed to burn tokens during forced unregistration: {e}",

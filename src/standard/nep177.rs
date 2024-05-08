@@ -302,11 +302,7 @@ impl<T: Nep177ControllerInternal + Nep171Controller> Nep177Controller for T {
         owner_id: &AccountIdRef,
         metadata: &TokenMetadata,
     ) -> Result<(), Nep171MintError> {
-        self.mint(&Nep171Mint {
-            token_ids: vec![token_id.clone()],
-            receiver_id: owner_id.into(),
-            memo: None,
-        })?;
+        self.mint(&Nep171Mint::new(vec![token_id.clone()], owner_id))?;
         self.set_token_metadata_unchecked(token_id, Some(metadata));
         Ok(())
     }
@@ -316,11 +312,7 @@ impl<T: Nep177ControllerInternal + Nep171Controller> Nep177Controller for T {
         token_id: &TokenId,
         owner_id: &AccountId,
     ) -> Result<(), Nep171BurnError> {
-        self.burn(&Nep171Burn {
-            token_ids: vec![token_id.clone()],
-            owner_id: owner_id.into(),
-            memo: None,
-        })?;
+        self.burn(&Nep171Burn::new(vec![token_id.clone()], owner_id))?;
         self.set_token_metadata_unchecked(token_id, None);
         Ok(())
     }

@@ -95,14 +95,11 @@ impl NonFungibleToken {
     }
 
     pub fn mint(&mut self, token_id: TokenId, receiver_id: AccountId) {
-        let action = Nep171Mint {
-            token_ids: vec![token_id],
-            receiver_id: receiver_id.into(),
-            memo: None,
-        };
-        Nep171Controller::mint(self, &action).unwrap_or_else(|e| {
-            env::panic_str(&format!("Mint failed: {e:?}"));
-        });
+        Nep171Controller::mint(self, &Nep171Mint::new(vec![token_id], receiver_id)).unwrap_or_else(
+            |e| {
+                env::panic_str(&format!("Mint failed: {e:?}"));
+            },
+        );
     }
 }
 

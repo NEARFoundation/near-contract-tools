@@ -1,7 +1,7 @@
 workspaces_tests::predicate!();
 
 use near_sdk::{env, log, near, PanicOnDefault};
-use near_sdk_contract_tools::{hook::Hook, standard::nep171::*, Nep171};
+use near_sdk_contract_tools::{hook::Hook, nft::Nep171Mint, standard::nep171::*, Nep171};
 
 #[derive(Nep171, PanicOnDefault)]
 #[nep171(transfer_hook = "Self")]
@@ -29,12 +29,10 @@ impl Contract {
     }
 
     pub fn mint(&mut self, token_ids: Vec<TokenId>) {
-        let action = action::Nep171Mint {
-            token_ids,
-            receiver_id: env::predecessor_account_id().into(),
-            memo: None,
-        };
-        Nep171Controller::mint(self, &action)
-            .unwrap_or_else(|e| env::panic_str(&format!("Failed to mint: {:#?}", e)));
+        Nep171Controller::mint(
+            self,
+            &Nep171Mint::new(token_ids, env::predecessor_account_id()),
+        )
+        .unwrap_or_else(|e| env::panic_str(&format!("Failed to mint: {:#?}", e)));
     }
 }
