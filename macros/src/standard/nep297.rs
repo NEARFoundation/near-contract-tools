@@ -153,11 +153,11 @@ pub fn expand(meta: Nep297Meta) -> Result<TokenStream, darling::Error> {
         impl #imp #me::standard::nep297::ToEventLog for #ident #ty #wher {
             type Data = #ident #ty;
 
-            fn to_event_log<'__el>(&'__el self) -> #me::standard::nep297::EventLog<&'__el Self> {
+            fn to_event_log<'__el>(&'__el self) -> #me::standard::nep297::EventLog<&'__el Self::Data> {
                 #me::standard::nep297::EventLog {
-                    standard: #standard,
-                    version: #version,
-                    event: #event,
+                    standard: #standard.into(),
+                    version: #version.into(),
+                    event: #event.into(),
                     data: self,
                 }
             }

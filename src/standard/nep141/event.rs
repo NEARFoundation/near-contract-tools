@@ -17,7 +17,7 @@ use near_sdk_contract_tools_macros::event;
     standard = "nep141",
     version = "1.0.0"
 )]
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Nep141Event<'a> {
     /// Token mint event. Emitted when tokens are created and total_supply is
     /// increased.

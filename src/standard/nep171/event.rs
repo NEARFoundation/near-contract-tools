@@ -15,7 +15,7 @@ use near_sdk_contract_tools_macros::event;
     standard = "nep171",
     version = "1.2.0"
 )]
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Nep171Event<'a> {
     /// Emitted when a token is newly minted.
     NftMint(Vec<NftMintLog<'a>>),
