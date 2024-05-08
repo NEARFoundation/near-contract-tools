@@ -395,12 +395,12 @@ mod pausable_fungible_token {
     use near_sdk_contract_tools::{
         ft::*,
         hook::Hook,
-        pause::{hooks::PausableHook, Pause},
+        pause::{hooks::Pausable, Pause},
         Pause,
     };
 
     #[derive(FungibleToken, Pause, PanicOnDefault)]
-    #[fungible_token(all_hooks = "PausableHook", transfer_hook = "TransferHook")]
+    #[fungible_token(all_hooks = "Pausable", transfer_hook = "TransferHook")]
     #[near(contract_state)]
     struct Contract {
         pub storage_usage: u64,

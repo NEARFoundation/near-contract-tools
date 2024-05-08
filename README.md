@@ -201,13 +201,13 @@ One may wish to combine the features of multiple macros in one contract. All of 
 ```rust
 use near_sdk_contract_tools::{
     ft::*,
-    pause::{*, hooks::PausableHook},
+    pause::{*, hooks::Pausable},
     Pause,
 };
 use near_sdk::{near, PanicOnDefault};
 
 #[derive(FungibleToken, Pause, PanicOnDefault)]
-#[fungible_token(all_hooks = "PausableHook")]
+#[fungible_token(all_hooks = "Pausable")]
 #[near(contract_state)]
 struct Contract {}
 ```

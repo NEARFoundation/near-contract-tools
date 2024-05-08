@@ -165,9 +165,9 @@ pub mod hooks {
     use super::Pause;
 
     /// Ensures that a contract is unpaused before calling a method.
-    pub struct PausableHook;
+    pub struct Pausable;
 
-    impl<C, A> Hook<C, A> for PausableHook
+    impl<C, A> Hook<C, A> for Pausable
     where
         C: Pause,
     {

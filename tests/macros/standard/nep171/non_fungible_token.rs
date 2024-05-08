@@ -2,12 +2,12 @@ use near_sdk::{env, near, PanicOnDefault};
 use near_sdk_contract_tools::{
     nft::*,
     owner::Owner,
-    pause::{hooks::PausableHook, Pause},
+    pause::{hooks::Pausable, Pause},
     Owner, Pause,
 };
 
 #[derive(NonFungibleToken, Pause, Owner, PanicOnDefault)]
-#[non_fungible_token(transfer_hook = "PausableHook")]
+#[non_fungible_token(transfer_hook = "Pausable")]
 #[near(contract_state)]
 pub struct Contract {
     next_token_id: u32,
