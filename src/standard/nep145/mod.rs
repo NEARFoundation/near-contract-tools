@@ -1,11 +1,9 @@
 //! NEP-145 Storage Management
 //! <https://github.com/near/NEPs/blob/master/neps/nep-0145.md>
 
-use std::cmp::Ordering;
+use std::{borrow::Cow, cmp::Ordering};
 
-use near_sdk::{
-    borsh::BorshSerialize, env, near, serde::Serialize, AccountId, BorshStorageKey, NearToken,
-};
+use near_sdk::{borsh::BorshSerialize, env, near, AccountIdRef, BorshStorageKey, NearToken};
 
 use crate::{hook::Hook, slot::Slot, DefaultStorageKey};
 
@@ -79,16 +77,15 @@ impl Default for StorageBalanceBounds {
 #[borsh(crate = "near_sdk::borsh")]
 enum StorageKey<'a> {
     BalanceBounds,
-    Account(&'a AccountId),
+    Account(&'a AccountIdRef),
 }
 
 /// Describes a force unregister action.
-#[derive(Serialize, BorshSerialize, Clone, Debug, PartialEq, Eq)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[near]
 pub struct Nep145ForceUnregister<'a> {
     /// The account to be unregistered.
-    pub account_id: &'a AccountId,
+    pub account_id: Cow<'a, AccountIdRef>,
     /// The account's balance at the time of unregistration.
     pub balance: StorageBalance,
 }
@@ -111,7 +108,7 @@ pub trait Nep145ControllerInternal {
     }
 
     /// Storage slot for individual account balance.
-    fn slot_account(account_id: &AccountId) -> Slot<StorageBalance> {
+    fn slot_account(account_id: &AccountIdRef) -> Slot<StorageBalance> {
         Slot::new(StorageKey::Account(account_id))
     }
 }
@@ -127,34 +124,34 @@ pub trait Nep145Controller {
     /// Returns the storage balance of the given account.
     fn get_storage_balance(
         &self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
     ) -> Result<StorageBalance, AccountNotRegisteredError>;
 
     /// Locks the given amount of storage balance for the given account.
     fn lock_storage(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: NearToken,
     ) -> Result<StorageBalance, StorageLockError>;
 
     /// Unlocks the given amount of storage balance for the given account.
     fn unlock_storage(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: NearToken,
     ) -> Result<StorageBalance, StorageUnlockError>;
 
     /// Deposits the given amount of storage balance for the given account.
     fn deposit_to_storage_account(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: NearToken,
     ) -> Result<StorageBalance, StorageDepositError>;
 
     /// Withdraws the given amount of storage balance for the given account.
     fn withdraw_from_storage_account(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: NearToken,
     ) -> Result<StorageBalance, StorageWithdrawError>;
 
@@ -162,14 +159,14 @@ pub trait Nep145Controller {
     /// that should be refunded.
     fn unregister_storage_account(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
     ) -> Result<NearToken, StorageUnregisterError>;
 
     /// Force unregisters the given account, returning the amount of storage balance
     /// that should be refunded.
     fn force_unregister_storage_account(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
     ) -> Result<NearToken, StorageForceUnregisterError>;
 
     /// Returns the storage balance bounds for the contract.
@@ -182,7 +179,7 @@ pub trait Nep145Controller {
     /// storage writes that are to be debited from the account's balance.
     fn storage_accounting(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         storage_usage_start: u64,
     ) -> Result<(), StorageAccountingError> {
         let storage_usage_end = env::storage_usage();
@@ -216,29 +213,29 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
 
     fn get_storage_balance(
         &self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
     ) -> Result<StorageBalance, AccountNotRegisteredError> {
         Self::slot_account(account_id)
             .read()
-            .ok_or_else(|| AccountNotRegisteredError(account_id.clone()))
+            .ok_or_else(|| AccountNotRegisteredError(account_id.to_owned()))
     }
 
     fn lock_storage(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: NearToken,
     ) -> Result<StorageBalance, StorageLockError> {
         let mut account_slot = Self::slot_account(account_id);
         let mut balance = account_slot
             .read()
-            .ok_or(AccountNotRegisteredError(account_id.clone()))?;
+            .ok_or(AccountNotRegisteredError(account_id.to_owned()))?;
 
         balance.available =
             balance
                 .available
                 .checked_sub(amount)
                 .ok_or(InsufficientBalanceError {
-                    account_id: account_id.clone(),
+                    account_id: account_id.to_owned(),
                     attempted_to_use: amount,
                     available: balance.available,
                 })?;
@@ -250,14 +247,14 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
 
     fn unlock_storage(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: NearToken,
     ) -> Result<StorageBalance, StorageUnlockError> {
         let mut account_slot = Self::slot_account(account_id);
 
         let mut balance = account_slot
             .read()
-            .ok_or(AccountNotRegisteredError(account_id.clone()))?;
+            .ok_or(AccountNotRegisteredError(account_id.to_owned()))?;
 
         balance.available = {
             let new_available = balance
@@ -266,7 +263,7 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
                 .unwrap_or_else(|| env::panic_str(PANIC_MESSAGE_STORAGE_AVAILABLE_OVERFLOW));
 
             if new_available > balance.total {
-                return Err(ExcessiveUnlockError(account_id.clone()).into());
+                return Err(ExcessiveUnlockError(account_id.to_owned()).into());
             }
 
             new_available
@@ -279,7 +276,7 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
 
     fn deposit_to_storage_account(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: NearToken,
     ) -> Result<StorageBalance, StorageDepositError> {
         let mut account_slot = Self::slot_account(account_id);
@@ -296,7 +293,7 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
 
             if new_total < bounds.min {
                 return Err(MinimumBalanceUnderrunError {
-                    account_id: account_id.clone(),
+                    account_id: account_id.to_owned(),
                     minimum_balance: bounds.min,
                 }
                 .into());
@@ -305,7 +302,7 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
             if let Some(maximum_balance) = bounds.max {
                 if new_total > maximum_balance {
                     return Err(MaximumBalanceOverrunError {
-                        account_id: account_id.clone(),
+                        account_id: account_id.to_owned(),
                         maximum_balance,
                     }
                     .into());
@@ -327,21 +324,21 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
 
     fn withdraw_from_storage_account(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: NearToken,
     ) -> Result<StorageBalance, StorageWithdrawError> {
         let mut account_slot = Self::slot_account(account_id);
 
         let mut balance = account_slot
             .read()
-            .ok_or_else(|| AccountNotRegisteredError(account_id.clone()))?;
+            .ok_or_else(|| AccountNotRegisteredError(account_id.to_owned()))?;
 
         balance.available =
             balance
                 .available
                 .checked_sub(amount)
                 .ok_or_else(|| InsufficientBalanceError {
-                    account_id: account_id.clone(),
+                    account_id: account_id.to_owned(),
                     available: balance.available,
                     attempted_to_use: amount,
                 })?;
@@ -354,7 +351,7 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
                 .checked_sub(amount)
                 .filter(|&new_total| new_total >= bounds.min)
                 .ok_or(MinimumBalanceUnderrunError {
-                    account_id: account_id.clone(),
+                    account_id: account_id.to_owned(),
                     minimum_balance: bounds.min,
                 })?
         };
@@ -366,18 +363,18 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
 
     fn unregister_storage_account(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
     ) -> Result<NearToken, StorageUnregisterError> {
         let mut account_slot = Self::slot_account(account_id);
 
         let balance = account_slot
             .read()
-            .ok_or_else(|| AccountNotRegisteredError(account_id.clone()))?;
+            .ok_or_else(|| AccountNotRegisteredError(account_id.to_owned()))?;
 
         match balance.total.checked_sub(balance.available) {
             Some(locked_balance) if !locked_balance.is_zero() => {
                 return Err(UnregisterWithLockedBalanceError {
-                    account_id: account_id.clone(),
+                    account_id: account_id.to_owned(),
                     locked_balance,
                 }
                 .into())
@@ -393,16 +390,16 @@ impl<T: Nep145ControllerInternal> Nep145Controller for T {
 
     fn force_unregister_storage_account(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
     ) -> Result<NearToken, StorageForceUnregisterError> {
         let mut account_slot = Self::slot_account(account_id);
 
         let balance = account_slot
             .read()
-            .ok_or_else(|| AccountNotRegisteredError(account_id.clone()))?;
+            .ok_or_else(|| AccountNotRegisteredError(account_id.to_owned()))?;
 
         let action = Nep145ForceUnregister {
-            account_id,
+            account_id: account_id.into(),
             balance,
         };
 

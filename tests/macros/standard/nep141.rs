@@ -96,8 +96,8 @@ fn nep141_transfer() {
         ft.transfers.pop(),
         Some(
             borsh::to_vec(&Nep141Transfer {
-                sender_id: &alice,
-                receiver_id: &bob,
+                sender_id: alice.clone().into(),
+                receiver_id: bob.clone().into(),
                 amount: 50,
                 memo: None,
                 msg: None,

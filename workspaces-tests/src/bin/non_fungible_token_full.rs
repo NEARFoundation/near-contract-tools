@@ -121,10 +121,10 @@ impl Contract {
         let receiver = env::predecessor_account_id();
         for token_id in token_ids {
             self.mint_with_metadata(
-                token_id.clone(),
-                receiver.clone(),
+                &token_id,
+                &receiver,
                 &TokenMetadata::new()
-                    .title(token_id)
+                    .title(token_id.clone())
                     .description("description"),
             )
             .unwrap_or_else(|e| env::panic_str(&format!("Failed to mint: {:#?}", e)));

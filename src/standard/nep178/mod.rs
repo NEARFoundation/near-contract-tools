@@ -1,10 +1,11 @@
 //! NEP-178 non-fungible token approval management implementation.
 //!
 //! Reference: <https://github.com/near/NEPs/blob/master/neps/nep-0178.md>
-use std::{collections::HashMap, error::Error};
+use std::{borrow::Cow, collections::HashMap, error::Error};
 
 use near_sdk::{
-    borsh::BorshSerialize, collections::UnorderedMap, near, AccountId, BorshStorageKey,
+    borsh::BorshSerialize, collections::UnorderedMap, near, AccountId, AccountIdRef,
+    BorshStorageKey,
 };
 
 use crate::{
@@ -62,7 +63,7 @@ impl<C: Nep178Controller> Hook<C, Nep171Mint<'_>> for TokenApprovals {}
 impl<C: Nep178Controller> Hook<C, Nep171Transfer<'_>> for TokenApprovals {
     fn hook<R>(contract: &mut C, args: &Nep171Transfer<'_>, f: impl FnOnce(&mut C) -> R) -> R {
         let r = f(contract);
-        contract.revoke_all_unchecked(args.token_id);
+        contract.revoke_all_unchecked(&args.token_id);
         r
     }
 }
@@ -70,7 +71,7 @@ impl<C: Nep178Controller> Hook<C, Nep171Transfer<'_>> for TokenApprovals {
 impl<C: Nep178Controller> Hook<C, Nep171Burn<'_>> for TokenApprovals {
     fn hook<R>(contract: &mut C, args: &Nep171Burn<'_>, f: impl FnOnce(&mut C) -> R) -> R {
         let r = f(contract);
-        for token_id in args.token_ids {
+        for token_id in &args.token_ids {
             contract.revoke_all_unchecked(token_id);
         }
         r
@@ -92,7 +93,7 @@ impl<C: Nep171Controller + Nep178Controller> CheckExternalTransfer<C> for TokenA
                 Err(Nep171TransferError::SenderNotApproved(s)),
             ) => {
                 let saved_approval =
-                    contract.get_approval_id_for(transfer.token_id, transfer.sender_id);
+                    contract.get_approval_id_for(&transfer.token_id, &transfer.sender_id);
 
                 if saved_approval == Some(*approval_id) {
                     Ok(s.owner_id)
@@ -165,14 +166,14 @@ pub trait Nep178Controller {
 
     /// Approve a token without checking if the account is already approved or
     /// if it exceeds the maximum number of approvals.
-    fn approve_unchecked(&mut self, token_id: &TokenId, account_id: &AccountId) -> ApprovalId;
+    fn approve_unchecked(&mut self, token_id: &TokenId, account_id: &AccountIdRef) -> ApprovalId;
 
     /// Revoke approval for an account to transfer token.
     fn revoke(&mut self, action: &Nep178Revoke<'_>) -> Result<(), Nep178RevokeError>;
 
     /// Revoke approval for an account to transfer token without checking if
     /// the account is approved.
-    fn revoke_unchecked(&mut self, token_id: &TokenId, account_id: &AccountId);
+    fn revoke_unchecked(&mut self, token_id: &TokenId, account_id: &AccountIdRef);
 
     /// Revoke all approvals for a token.
     fn revoke_all(&mut self, action: &Nep178RevokeAll<'_>) -> Result<(), Nep178RevokeAllError>;
@@ -181,8 +182,11 @@ pub trait Nep178Controller {
     fn revoke_all_unchecked(&mut self, token_id: &TokenId);
 
     /// Get the approval ID for an account, if it is approved for a token.
-    fn get_approval_id_for(&self, token_id: &TokenId, account_id: &AccountId)
-        -> Option<ApprovalId>;
+    fn get_approval_id_for(
+        &self,
+        token_id: &TokenId,
+        account_id: &AccountIdRef,
+    ) -> Option<ApprovalId>;
 
     /// Get the approvals for a token.
     fn get_approvals_for(&self, token_id: &TokenId) -> HashMap<AccountId, ApprovalId>;
@@ -193,14 +197,14 @@ impl<T: Nep178ControllerInternal + Nep171Controller> Nep178Controller for T {
     type RevokeHook = T::RevokeHook;
     type RevokeAllHook = T::RevokeAllHook;
 
-    fn approve_unchecked(&mut self, token_id: &TokenId, account_id: &AccountId) -> ApprovalId {
+    fn approve_unchecked(&mut self, token_id: &TokenId, account_id: &AccountIdRef) -> ApprovalId {
         let mut slot = Self::slot_token_approvals(token_id);
         let mut approvals = slot.read().unwrap_or_else(|| TokenApprovals {
             next_approval_id: 0,
             accounts: UnorderedMap::new(Self::slot_token_approvals_unordered_map(token_id)),
         });
         let approval_id = approvals.next_approval_id;
-        approvals.accounts.insert(account_id, &approval_id);
+        approvals.accounts.insert(&account_id.into(), &approval_id);
         approvals.next_approval_id += 1; // overflow unrealistic
         slot.write(&approvals);
 
@@ -209,18 +213,18 @@ impl<T: Nep178ControllerInternal + Nep171Controller> Nep178Controller for T {
 
     fn approve(&mut self, action: &Nep178Approve<'_>) -> Result<ApprovalId, Nep178ApproveError> {
         // owner check
-        if self.token_owner(action.token_id).as_ref() != Some(action.current_owner_id) {
+        if self.token_owner(&action.token_id).as_deref() != Some(action.current_owner_id.as_ref()) {
             return Err(UnauthorizedError {
                 token_id: action.token_id.clone(),
-                account_id: action.account_id.clone(),
+                account_id: action.account_id.clone().into(),
             }
             .into());
         }
 
-        let mut slot = Self::slot_token_approvals(action.token_id);
+        let mut slot = Self::slot_token_approvals(&action.token_id);
         let mut approvals = slot.read().unwrap_or_else(|| TokenApprovals {
             next_approval_id: 0,
-            accounts: UnorderedMap::new(Self::slot_token_approvals_unordered_map(action.token_id)),
+            accounts: UnorderedMap::new(Self::slot_token_approvals_unordered_map(&action.token_id)),
         });
 
         if approvals.accounts.len() >= MAX_APPROVALS {
@@ -231,16 +235,22 @@ impl<T: Nep178ControllerInternal + Nep171Controller> Nep178Controller for T {
         }
 
         let approval_id = approvals.next_approval_id;
-        if approvals.accounts.get(action.account_id).is_some() {
+        if approvals
+            .accounts
+            .get(&AccountId::from(action.account_id.as_ref()))
+            .is_some()
+        {
             return Err(AccountAlreadyApprovedError {
                 token_id: action.token_id.clone(),
-                account_id: action.account_id.clone(),
+                account_id: action.account_id.clone().into(),
             }
             .into());
         }
 
         Self::ApproveHook::hook(self, action, |_| {
-            approvals.accounts.insert(action.account_id, &approval_id);
+            approvals
+                .accounts
+                .insert(&action.account_id.clone().into(), &approval_id);
             approvals.next_approval_id += 1; // overflow unrealistic
             slot.write(&approvals);
 
@@ -248,64 +258,70 @@ impl<T: Nep178ControllerInternal + Nep171Controller> Nep178Controller for T {
         })
     }
 
-    fn revoke_unchecked(&mut self, token_id: &TokenId, account_id: &AccountId) {
+    fn revoke_unchecked(&mut self, token_id: &TokenId, account_id: &AccountIdRef) {
         let mut slot = Self::slot_token_approvals(token_id);
         let mut approvals = match slot.read() {
             Some(approvals) => approvals,
             None => return,
         };
 
-        let old = approvals.accounts.remove(account_id);
+        let old = approvals.accounts.remove(&account_id.into());
 
         if old.is_some() {
             slot.write(&approvals);
         }
     }
 
-    fn revoke(&mut self, action: &Nep178Revoke<'_>) -> Result<(), Nep178RevokeError> {
+    fn revoke(&mut self, action: &Nep178Revoke) -> Result<(), Nep178RevokeError> {
         // owner check
-        if self.token_owner(action.token_id).as_ref() != Some(action.current_owner_id) {
+        if self.token_owner(&action.token_id).as_deref() != Some(action.current_owner_id.as_ref()) {
             return Err(UnauthorizedError {
                 token_id: action.token_id.clone(),
-                account_id: action.account_id.clone(),
+                account_id: action.account_id.clone().into(),
             }
             .into());
         }
 
-        let mut slot = Self::slot_token_approvals(action.token_id);
+        let mut slot = Self::slot_token_approvals(&action.token_id);
         let mut approvals = slot.read().ok_or_else(|| AccountNotApprovedError {
             token_id: action.token_id.clone(),
-            account_id: action.account_id.clone(),
+            account_id: action.account_id.clone().into(),
         })?;
 
-        if approvals.accounts.get(action.account_id).is_none() {
+        if approvals
+            .accounts
+            .get(&AccountId::from(action.account_id.as_ref()))
+            .is_none()
+        {
             return Err(AccountNotApprovedError {
                 token_id: action.token_id.clone(),
-                account_id: action.account_id.clone(),
+                account_id: action.account_id.clone().into(),
             }
             .into());
         }
 
         Self::RevokeHook::hook(self, action, |_| {
-            approvals.accounts.remove(action.account_id);
+            approvals
+                .accounts
+                .remove(&AccountId::from(action.account_id.as_ref()));
             slot.write(&approvals);
 
             Ok(())
         })
     }
 
-    fn revoke_all(&mut self, action: &Nep178RevokeAll<'_>) -> Result<(), Nep178RevokeAllError> {
+    fn revoke_all(&mut self, action: &Nep178RevokeAll) -> Result<(), Nep178RevokeAllError> {
         // owner check
-        if self.token_owner(action.token_id).as_ref() != Some(action.current_owner_id) {
+        if self.token_owner(&action.token_id).as_deref() != Some(action.current_owner_id.as_ref()) {
             return Err(UnauthorizedError {
                 token_id: action.token_id.clone(),
-                account_id: action.current_owner_id.clone(),
+                account_id: action.current_owner_id.clone().into(),
             }
             .into());
         }
 
         Self::RevokeAllHook::hook(self, action, |contract| {
-            contract.revoke_all_unchecked(action.token_id);
+            contract.revoke_all_unchecked(&action.token_id);
 
             Ok(())
         })
@@ -327,12 +343,12 @@ impl<T: Nep178ControllerInternal + Nep171Controller> Nep178Controller for T {
     fn get_approval_id_for(
         &self,
         token_id: &TokenId,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
     ) -> Option<ApprovalId> {
         let slot = Self::slot_token_approvals(token_id);
         let approvals = slot.read()?;
 
-        approvals.accounts.get(account_id)
+        approvals.accounts.get(&account_id.into())
     }
 
     fn get_approvals_for(&self, token_id: &TokenId) -> HashMap<AccountId, ApprovalId> {
@@ -342,10 +358,6 @@ impl<T: Nep178ControllerInternal + Nep171Controller> Nep178Controller for T {
             None => return HashMap::default(),
         };
 
-        approvals
-            .accounts
-            .into_iter()
-            .map(|(k, v)| (k.clone(), v))
-            .collect()
+        approvals.accounts.into_iter().collect()
     }
 }

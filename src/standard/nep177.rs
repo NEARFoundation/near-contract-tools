@@ -3,7 +3,9 @@
 //! Reference: <https://github.com/near/NEPs/blob/master/neps/nep-0177.md>
 use std::error::Error;
 
-use near_sdk::{borsh::BorshSerialize, env, json_types::U64, near, AccountId, BorshStorageKey};
+use near_sdk::{
+    borsh::BorshSerialize, env, json_types::U64, near, AccountId, AccountIdRef, BorshStorageKey,
+};
 use thiserror::Error;
 
 use crate::{
@@ -226,26 +228,30 @@ pub trait Nep177Controller {
     /// Mint a new token with metadata.
     fn mint_with_metadata(
         &mut self,
-        token_id: TokenId,
-        owner_id: AccountId,
+        token_id: &TokenId,
+        owner_id: &AccountIdRef,
         metadata: &TokenMetadata,
     ) -> Result<(), Nep171MintError>;
 
     /// Burn a token with metadata.
     fn burn_with_metadata(
         &mut self,
-        token_id: TokenId,
+        token_id: &TokenId,
         owner_id: &AccountId,
     ) -> Result<(), Nep171BurnError>;
 
     /// Sets the metadata for a token ID without checking whether the token
     /// exists, etc. and emits an [`Nep171Event::NftMetadataUpdate`] event.
-    fn set_token_metadata_unchecked(&mut self, token_id: TokenId, metadata: Option<&TokenMetadata>);
+    fn set_token_metadata_unchecked(
+        &mut self,
+        token_id: &TokenId,
+        metadata: Option<&TokenMetadata>,
+    );
 
     /// Sets the metadata for a token ID and emits an [`Nep171Event::NftMetadataUpdate`] event.
     fn set_token_metadata(
         &mut self,
-        token_id: TokenId,
+        token_id: &TokenId,
         metadata: &TokenMetadata,
     ) -> Result<(), UpdateTokenMetadataError>;
 
@@ -270,14 +276,17 @@ pub enum UpdateTokenMetadataError {
 impl<T: Nep177ControllerInternal + Nep171Controller> Nep177Controller for T {
     fn set_token_metadata(
         &mut self,
-        token_id: TokenId,
+        token_id: &TokenId,
         metadata: &TokenMetadata,
     ) -> Result<(), UpdateTokenMetadataError> {
-        if self.token_owner(&token_id).is_some() {
+        if self.token_owner(token_id).is_some() {
             self.set_token_metadata_unchecked(token_id, Some(metadata));
             Ok(())
         } else {
-            Err(TokenDoesNotExistError { token_id }.into())
+            Err(TokenDoesNotExistError {
+                token_id: token_id.clone(),
+            }
+            .into())
         }
     }
 
@@ -289,47 +298,41 @@ impl<T: Nep177ControllerInternal + Nep171Controller> Nep177Controller for T {
 
     fn mint_with_metadata(
         &mut self,
-        token_id: TokenId,
-        owner_id: AccountId,
+        token_id: &TokenId,
+        owner_id: &AccountIdRef,
         metadata: &TokenMetadata,
     ) -> Result<(), Nep171MintError> {
-        let token_ids = [token_id];
-        let action = Nep171Mint {
-            token_ids: &token_ids,
-            receiver_id: &owner_id,
+        self.mint(&Nep171Mint {
+            token_ids: vec![token_id.clone()],
+            receiver_id: owner_id.into(),
             memo: None,
-        };
-        self.mint(&action)?;
-        let [token_id] = token_ids;
+        })?;
         self.set_token_metadata_unchecked(token_id, Some(metadata));
         Ok(())
     }
 
     fn burn_with_metadata(
         &mut self,
-        token_id: TokenId,
+        token_id: &TokenId,
         owner_id: &AccountId,
     ) -> Result<(), Nep171BurnError> {
-        let token_ids = [token_id];
-        let action = Nep171Burn {
-            token_ids: &token_ids,
-            owner_id,
+        self.burn(&Nep171Burn {
+            token_ids: vec![token_id.clone()],
+            owner_id: owner_id.into(),
             memo: None,
-        };
-        self.burn(&action)?;
-        let [token_id] = token_ids;
+        })?;
         self.set_token_metadata_unchecked(token_id, None);
         Ok(())
     }
 
     fn set_token_metadata_unchecked(
         &mut self,
-        token_id: TokenId,
+        token_id: &TokenId,
         metadata: Option<&TokenMetadata>,
     ) {
-        <Self as Nep177ControllerInternal>::slot_token_metadata(&token_id).set(metadata);
+        <Self as Nep177ControllerInternal>::slot_token_metadata(token_id).set(metadata);
         Nep171Event::NftMetadataUpdate(vec![NftMetadataUpdateLog {
-            token_ids: vec![token_id],
+            token_ids: vec![token_id.into()],
             memo: None,
         }])
         .emit();

@@ -17,12 +17,12 @@ impl<C: Nep141Controller + Nep141ControllerInternal> Hook<C, Nep145ForceUnregist
     ) -> R {
         let r = f(contract);
 
-        let balance = contract.balance_of(args.account_id);
+        let balance = contract.balance_of(&args.account_id);
         contract
             .burn(&Nep141Burn {
                 amount: balance,
-                owner_id: args.account_id,
-                memo: Some("storage forced unregistration"),
+                owner_id: args.account_id.clone(),
+                memo: Some("storage forced unregistration".into()),
             })
             .unwrap_or_else(|e| {
                 near_sdk::env::panic_str(&format!(
@@ -30,7 +30,7 @@ impl<C: Nep141Controller + Nep141ControllerInternal> Hook<C, Nep145ForceUnregist
                 ))
             });
 
-        <C as Nep141ControllerInternal>::slot_account(args.account_id).remove();
+        <C as Nep141ControllerInternal>::slot_account(&args.account_id).remove();
 
         r
     }

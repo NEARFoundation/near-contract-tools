@@ -63,7 +63,7 @@ pub fn event_attribute(
     let me_str = quote! { #me }.to_string();
 
     Ok(quote::quote! {
-        #[derive(#macros::Nep297, #serde::Serialize)]
+        #[derive(#macros::Nep297, #serde::Serialize, #serde::Deserialize)]
         #[nep297(
             crate = #me_str,
             standard = #standard,

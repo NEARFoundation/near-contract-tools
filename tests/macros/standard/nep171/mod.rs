@@ -49,12 +49,8 @@ mod full_no_hooks {
         Nep145Controller::deposit_to_storage_account(&mut n, &alice, NearToken::from_near(1))
             .unwrap();
 
-        n.mint_with_metadata(
-            token_id.clone(),
-            alice,
-            &TokenMetadata::new().title("Title"),
-        )
-        .unwrap();
+        n.mint_with_metadata(&token_id, &alice, &TokenMetadata::new().title("Title"))
+            .unwrap();
 
         let nft_tok = n.nft_token(token_id);
         dbg!(nft_tok);
@@ -100,8 +96,8 @@ impl NonFungibleToken {
 
     pub fn mint(&mut self, token_id: TokenId, receiver_id: AccountId) {
         let action = Nep171Mint {
-            token_ids: &[token_id],
-            receiver_id: &receiver_id,
+            token_ids: vec![token_id],
+            receiver_id: receiver_id.into(),
             memo: None,
         };
         Nep171Controller::mint(self, &action).unwrap_or_else(|e| {
@@ -174,9 +170,9 @@ mod tests {
             vec![Nep171Event::NftTransfer(vec![NftTransferLog {
                 memo: None,
                 authorized_id: None,
-                old_owner_id: account_alice.clone(),
-                new_owner_id: account_bob.clone(),
-                token_ids: vec![token_id.to_string()]
+                old_owner_id: account_alice.into(),
+                new_owner_id: account_bob.into(),
+                token_ids: vec![token_id.into()]
             }])
             .to_event_string()]
         );

@@ -181,7 +181,7 @@ async fn delete_account() {
             "receiver_id": contract.id(),
             "actions": [
                 PromiseAction::DeleteAccount {
-                    beneficiary_id: alice.id().as_str().parse().unwrap()
+                    beneficiary_id: alice.id().clone(),
                 },
             ],
         }))
@@ -393,7 +393,7 @@ async fn add_both_access_key_kinds_and_delete() {
         execute_actions(vec![PromiseAction::AddAccessKey {
             public_key: new_public_key_string.clone(),
             allowance: NearToken::from_yoctonear(1234567890),
-            receiver_id: alice.id().as_str().parse().unwrap(),
+            receiver_id: alice.id().clone(),
             function_names: vec!["one".into(), "two".into(), "three".into()],
             nonce: None,
         }])

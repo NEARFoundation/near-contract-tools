@@ -1,6 +1,6 @@
 //! Hooks to integrate NEP-145 with other components.
 
-use near_sdk::{env, AccountId};
+use near_sdk::{env, AccountIdRef};
 
 use crate::{
     hook::Hook,
@@ -12,7 +12,7 @@ use crate::{
 
 use super::Nep145Controller;
 
-fn require_registration(contract: &impl Nep145Controller, account_id: &AccountId) {
+fn require_registration(contract: &impl Nep145Controller, account_id: &AccountIdRef) {
     contract
         .get_storage_balance(account_id)
         .unwrap_or_else(|e| env::panic_str(&e.to_string()));
@@ -20,7 +20,7 @@ fn require_registration(contract: &impl Nep145Controller, account_id: &AccountId
 
 fn apply_storage_accounting_hook<C: Nep145Controller, R>(
     contract: &mut C,
-    account_id: &AccountId,
+    account_id: &AccountIdRef,
     f: impl FnOnce(&mut C) -> R,
 ) -> R {
     let storage_usage_start = env::storage_usage();
@@ -49,13 +49,13 @@ pub struct Nep141StorageAccountingHook;
 
 impl<C: Nep145Controller> Hook<C, Nep141Mint<'_>> for Nep141StorageAccountingHook {
     fn hook<R>(contract: &mut C, action: &Nep141Mint<'_>, f: impl FnOnce(&mut C) -> R) -> R {
-        apply_storage_accounting_hook(contract, action.receiver_id, f)
+        apply_storage_accounting_hook(contract, &action.receiver_id, f)
     }
 }
 
 impl<C: Nep145Controller> Hook<C, Nep141Transfer<'_>> for Nep141StorageAccountingHook {
     fn hook<R>(contract: &mut C, action: &Nep141Transfer<'_>, f: impl FnOnce(&mut C) -> R) -> R {
-        apply_storage_accounting_hook(contract, action.receiver_id, f)
+        apply_storage_accounting_hook(contract, &action.receiver_id, f)
     }
 }
 
@@ -70,13 +70,13 @@ pub struct Nep171StorageAccountingHook;
 
 impl<C: Nep145Controller> Hook<C, Nep171Mint<'_>> for Nep171StorageAccountingHook {
     fn hook<R>(contract: &mut C, action: &Nep171Mint<'_>, f: impl FnOnce(&mut C) -> R) -> R {
-        apply_storage_accounting_hook(contract, action.receiver_id, f)
+        apply_storage_accounting_hook(contract, &action.receiver_id, f)
     }
 }
 
 impl<C: Nep145Controller> Hook<C, Nep171Transfer<'_>> for Nep171StorageAccountingHook {
     fn hook<R>(contract: &mut C, action: &Nep171Transfer<'_>, f: impl FnOnce(&mut C) -> R) -> R {
-        apply_storage_accounting_hook(contract, action.receiver_id, f)
+        apply_storage_accounting_hook(contract, &action.receiver_id, f)
     }
 }
 

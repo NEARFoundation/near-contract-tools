@@ -59,8 +59,8 @@ impl Contract {
         self.next_token_id += 1;
         Nep177Controller::mint_with_metadata(
             self,
-            token_id.clone(),
-            env::predecessor_account_id(),
+            &token_id,
+            &env::predecessor_account_id(),
             &nep177::TokenMetadata::new()
                 .title(format!("Token {token_id}"))
                 .description(format!("This is token {token_id}.")),

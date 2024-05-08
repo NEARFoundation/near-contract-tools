@@ -11,7 +11,7 @@ pub struct Contract {
 impl Hook<Contract, Nep171Transfer<'_>> for Contract {
     fn hook<R>(
         contract: &mut Contract,
-        args: &Nep171Transfer<'_>,
+        args: &Nep171Transfer,
         f: impl FnOnce(&mut Contract) -> R,
     ) -> R {
         log!(

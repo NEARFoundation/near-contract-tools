@@ -3,6 +3,8 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Expr, Type};
 
+use crate::unitify;
+
 use super::{nep141, nep145, nep148};
 
 #[derive(Debug, FromDeriveInput)]
@@ -53,11 +55,8 @@ pub fn expand(meta: FungibleTokenMeta) -> Result<TokenStream, darling::Error> {
         near_sdk,
     } = meta;
 
-    let all_hooks_or_unit = all_hooks
-        .clone()
-        .unwrap_or_else(|| syn::parse_quote! { () });
-    let force_unregister_hook_or_unit =
-        force_unregister_hook.unwrap_or_else(|| syn::parse_quote! { () });
+    let all_hooks_or_unit = unitify(all_hooks.clone());
+    let force_unregister_hook_or_unit = unitify(force_unregister_hook);
 
     let expand_nep141 = nep141::expand(nep141::Nep141Meta {
         storage_key: core_storage_key,

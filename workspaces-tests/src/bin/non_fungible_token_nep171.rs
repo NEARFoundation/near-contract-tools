@@ -30,8 +30,8 @@ impl Contract {
 
     pub fn mint(&mut self, token_ids: Vec<TokenId>) {
         let action = action::Nep171Mint {
-            token_ids: &token_ids,
-            receiver_id: &env::predecessor_account_id(),
+            token_ids,
+            receiver_id: env::predecessor_account_id().into(),
             memo: None,
         };
         Nep171Controller::mint(self, &action)

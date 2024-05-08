@@ -2,7 +2,7 @@
 //!
 //! Makes it easy to create and manage storage keys and avoid unnecessary
 //! writes to contract storage. This reduces transaction IO  and saves on gas.
-use std::marker::PhantomData;
+use std::{marker::PhantomData, ops::Deref};
 
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
@@ -95,9 +95,18 @@ impl<T> Slot<T> {
 }
 
 impl<T: BorshSerialize> Slot<T> {
-    /// Writes a value to the managed storage slot
+    /// Writes a value to the managed storage slot.
     pub fn write(&mut self, value: &T) -> bool {
-        self.write_raw(&{ borsh::to_vec(&value) }.unwrap())
+        self.write_raw(&borsh::to_vec(value).unwrap())
+    }
+
+    /// Writes a value to the managed storage slot which is dereferenced from
+    /// the target type.
+    pub fn write_deref<U: BorshSerialize + ?Sized>(&mut self, value: &U) -> bool
+    where
+        T: Deref<Target = U>,
+    {
+        self.write_raw(&borsh::to_vec(value).unwrap())
     }
 
     /// If the given value is `Some(T)`, writes `T` to storage. Otherwise,

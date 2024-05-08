@@ -37,7 +37,7 @@ impl Contract {
             self,
             &Nep141Mint {
                 amount: amount.into(),
-                receiver_id: &env::predecessor_account_id(),
+                receiver_id: env::predecessor_account_id().into(),
                 memo: None,
             },
         )

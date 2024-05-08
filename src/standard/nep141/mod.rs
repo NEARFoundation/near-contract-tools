@@ -1,7 +1,9 @@
 //! NEP-141 fungible token core implementation
 //! <https://github.com/near/NEPs/blob/master/neps/nep-0141.md>
 
-use near_sdk::{borsh::BorshSerialize, near, serde::Serialize, AccountId, BorshStorageKey, Gas};
+use std::borrow::Cow;
+
+use near_sdk::{borsh::BorshSerialize, near, AccountIdRef, BorshStorageKey, Gas};
 
 use crate::{hook::Hook, slot::Slot, standard::nep297::*, DefaultStorageKey};
 
@@ -24,29 +26,28 @@ pub const GAS_FOR_FT_TRANSFER_CALL: Gas =
 /// Error message for insufficient gas.
 pub const MORE_GAS_FAIL_MESSAGE: &str = "Insufficient gas attached.";
 
-#[derive(BorshStorageKey)]
-#[near]
-enum StorageKey {
+#[derive(BorshSerialize, BorshStorageKey)]
+#[borsh(crate = "near_sdk::borsh")]
+enum StorageKey<'a> {
     TotalSupply,
-    Account(AccountId),
+    Account(&'a AccountIdRef),
 }
 
 /// Transfer metadata generic over both types of transfer (`ft_transfer` and
 /// `ft_transfer_call`).
-#[derive(Serialize, BorshSerialize, PartialEq, Eq, Clone, Debug)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(PartialEq, Eq, Clone, Debug)]
+#[near]
 pub struct Nep141Transfer<'a> {
     /// Sender's account ID.
-    pub sender_id: &'a AccountId,
+    pub sender_id: Cow<'a, AccountIdRef>,
     /// Receiver's account ID.
-    pub receiver_id: &'a AccountId,
+    pub receiver_id: Cow<'a, AccountIdRef>,
     /// Transferred amount.
     pub amount: u128,
     /// Optional memo string.
-    pub memo: Option<&'a str>,
+    pub memo: Option<Cow<'a, str>>,
     /// Message passed to contract located at `receiver_id`.
-    pub msg: Option<&'a str>,
+    pub msg: Option<Cow<'a, str>>,
     /// Is this transfer a revert as a result of a [`Nep141::ft_transfer_call`] -> [`Nep141Receiver::ft_on_transfer`] call?
     pub revert: bool,
 }
@@ -60,29 +61,27 @@ impl<'a> Nep141Transfer<'a> {
 }
 
 /// Describes a mint operation.
-#[derive(Serialize, BorshSerialize, Clone, Debug, PartialEq, Eq)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[near]
 pub struct Nep141Mint<'a> {
     /// Amount to mint.
     pub amount: u128,
     /// Account ID to mint to.
-    pub receiver_id: &'a AccountId,
+    pub receiver_id: Cow<'a, AccountIdRef>,
     /// Optional memo string.
-    pub memo: Option<&'a str>,
+    pub memo: Option<Cow<'a, str>>,
 }
 
 /// Describes a burn operation.
-#[derive(Serialize, BorshSerialize, Clone, Debug, PartialEq, Eq)]
-#[serde(crate = "near_sdk::serde")]
-#[borsh(crate = "near_sdk::borsh")]
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[near]
 pub struct Nep141Burn<'a> {
     /// Amount to burn.
     pub amount: u128,
     /// Account ID to burn from.
-    pub owner_id: &'a AccountId,
+    pub owner_id: Cow<'a, AccountIdRef>,
     /// Optional memo string.
-    pub memo: Option<&'a str>,
+    pub memo: Option<Cow<'a, str>>,
 }
 
 /// Internal functions for [`Nep141Controller`]. Using these methods may result in unexpected behavior.
@@ -106,8 +105,8 @@ pub trait Nep141ControllerInternal {
     }
 
     /// Slot for account data.
-    fn slot_account(account_id: &AccountId) -> Slot<u128> {
-        Self::root().field(StorageKey::Account(account_id.clone()))
+    fn slot_account(account_id: &AccountIdRef) -> Slot<u128> {
+        Self::root().field(StorageKey::Account(account_id))
     }
 
     /// Slot for storing total supply.
@@ -132,7 +131,7 @@ pub trait Nep141Controller {
         Self: Sized;
 
     /// Get the balance of an account. Returns 0 if the account does not exist.
-    fn balance_of(&self, account_id: &AccountId) -> u128;
+    fn balance_of(&self, account_id: &AccountIdRef) -> u128;
 
     /// Get the total circulating supply of the token.
     fn total_supply(&self) -> u128;
@@ -141,7 +140,7 @@ pub trait Nep141Controller {
     /// emission or hook invocation.
     fn withdraw_unchecked(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: u128,
     ) -> Result<(), WithdrawError>;
 
@@ -149,7 +148,7 @@ pub trait Nep141Controller {
     /// event emission or hook invocation.
     fn deposit_unchecked(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: u128,
     ) -> Result<(), DepositError>;
 
@@ -158,8 +157,8 @@ pub trait Nep141Controller {
     /// supply. No event emission or hook invocation.
     fn transfer_unchecked(
         &mut self,
-        sender_account_id: &AccountId,
-        receiver_account_id: &AccountId,
+        sender_account_id: &AccountIdRef,
+        receiver_account_id: &AccountIdRef,
         amount: u128,
     ) -> Result<(), TransferError>;
 
@@ -181,7 +180,7 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
     type TransferHook = T::TransferHook;
     type BurnHook = T::BurnHook;
 
-    fn balance_of(&self, account_id: &AccountId) -> u128 {
+    fn balance_of(&self, account_id: &AccountIdRef) -> u128 {
         Self::slot_account(account_id).read().unwrap_or(0)
     }
 
@@ -191,7 +190,7 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
 
     fn withdraw_unchecked(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: u128,
     ) -> Result<(), WithdrawError> {
         if amount != 0 {
@@ -200,7 +199,7 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
                 Self::slot_account(account_id).write(&balance);
             } else {
                 return Err(BalanceUnderflowError {
-                    account_id: account_id.clone(),
+                    account_id: account_id.to_owned(),
                     balance,
                     amount,
                 }
@@ -224,7 +223,7 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
 
     fn deposit_unchecked(
         &mut self,
-        account_id: &AccountId,
+        account_id: &AccountIdRef,
         amount: u128,
     ) -> Result<(), DepositError> {
         if amount != 0 {
@@ -233,7 +232,7 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
                 Self::slot_account(account_id).write(&balance);
             } else {
                 return Err(BalanceOverflowError {
-                    account_id: account_id.clone(),
+                    account_id: account_id.to_owned(),
                     balance,
                     amount,
                 }
@@ -257,8 +256,8 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
 
     fn transfer_unchecked(
         &mut self,
-        sender_account_id: &AccountId,
-        receiver_account_id: &AccountId,
+        sender_account_id: &AccountIdRef,
+        receiver_account_id: &AccountIdRef,
         amount: u128,
     ) -> Result<(), TransferError> {
         let sender_balance = self.balance_of(sender_account_id);
@@ -270,7 +269,7 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
                 Self::slot_account(receiver_account_id).write(&receiver_balance);
             } else {
                 return Err(BalanceOverflowError {
-                    account_id: receiver_account_id.clone(),
+                    account_id: receiver_account_id.to_owned(),
                     balance: receiver_balance,
                     amount,
                 }
@@ -278,7 +277,7 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
             }
         } else {
             return Err(BalanceUnderflowError {
-                account_id: sender_account_id.clone(),
+                account_id: sender_account_id.to_owned(),
                 balance: sender_balance,
                 amount,
             }
@@ -291,8 +290,8 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
     fn transfer(&mut self, transfer: &Nep141Transfer<'_>) -> Result<(), TransferError> {
         Self::TransferHook::hook(self, transfer, |contract| {
             contract.transfer_unchecked(
-                transfer.sender_id,
-                transfer.receiver_id,
+                &transfer.sender_id,
+                &transfer.receiver_id,
                 transfer.amount,
             )?;
 
@@ -300,7 +299,7 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
                 old_owner_id: transfer.sender_id.clone(),
                 new_owner_id: transfer.receiver_id.clone(),
                 amount: transfer.amount.into(),
-                memo: transfer.memo.map(ToString::to_string),
+                memo: transfer.memo.clone(),
             }])
             .emit();
 
@@ -310,12 +309,12 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
 
     fn mint(&mut self, mint: &Nep141Mint) -> Result<(), DepositError> {
         Self::MintHook::hook(self, mint, |contract| {
-            contract.deposit_unchecked(mint.receiver_id, mint.amount)?;
+            contract.deposit_unchecked(&mint.receiver_id, mint.amount)?;
 
             Nep141Event::FtMint(vec![FtMintData {
                 owner_id: mint.receiver_id.clone(),
                 amount: mint.amount.into(),
-                memo: mint.memo.map(ToString::to_string),
+                memo: mint.memo.clone(),
             }])
             .emit();
 
@@ -325,12 +324,12 @@ impl<T: Nep141ControllerInternal> Nep141Controller for T {
 
     fn burn(&mut self, burn: &Nep141Burn) -> Result<(), WithdrawError> {
         Self::BurnHook::hook(self, burn, |contract| {
-            contract.withdraw_unchecked(burn.owner_id, burn.amount)?;
+            contract.withdraw_unchecked(&burn.owner_id, burn.amount)?;
 
             Nep141Event::FtBurn(vec![FtBurnData {
                 owner_id: burn.owner_id.clone(),
                 amount: burn.amount.into(),
-                memo: burn.memo.map(ToString::to_string),
+                memo: burn.memo.clone(),
             }])
             .emit();
 

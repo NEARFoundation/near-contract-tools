@@ -295,7 +295,7 @@ async fn fail_run_out_of_space() {
         format!(
             "Smart contract panicked: Storage lock error: {}",
             InsufficientBalanceError {
-                account_id: alice.id().as_str().parse().unwrap(),
+                account_id: alice.id().clone(),
                 available: balance.available,
                 attempted_to_use: NearToken::from_yoctonear(100490000000000000000000),
             }
@@ -338,8 +338,8 @@ async fn transfer_call_normal() {
         result.logs().to_vec(),
         vec![
             Nep141Event::FtTransfer(vec![FtTransferData {
-                old_owner_id: alice.id().as_str().parse().unwrap(),
-                new_owner_id: bob.id().as_str().parse().unwrap(),
+                old_owner_id: alice.id().into(),
+                new_owner_id: bob.id().into(),
                 amount: U128(10),
                 memo: None,
             }])
@@ -388,16 +388,16 @@ async fn transfer_call_return() {
         result.logs().to_vec(),
         vec![
             Nep141Event::FtTransfer(vec![FtTransferData {
-                old_owner_id: alice.id().as_str().parse().unwrap(),
-                new_owner_id: bob.id().as_str().parse().unwrap(),
+                old_owner_id: alice.id().into(),
+                new_owner_id: bob.id().into(),
                 amount: U128(10),
                 memo: None,
             }])
             .to_event_string(),
             format!("Received 10 from {}", alice.id()),
             Nep141Event::FtTransfer(vec![FtTransferData {
-                old_owner_id: bob.id().as_str().parse().unwrap(),
-                new_owner_id: alice.id().as_str().parse().unwrap(),
+                old_owner_id: bob.id().into(),
+                new_owner_id: alice.id().into(),
                 amount: U128(10),
                 memo: None,
             }])
@@ -445,8 +445,8 @@ async fn transfer_call_inner_transfer() {
         result.logs().to_vec(),
         vec![
             Nep141Event::FtTransfer(vec![FtTransferData {
-                old_owner_id: alice.id().as_str().parse().unwrap(),
-                new_owner_id: bob.id().as_str().parse().unwrap(),
+                old_owner_id: alice.id().into(),
+                new_owner_id: bob.id().into(),
                 amount: U128(10),
                 memo: None,
             }])
@@ -454,15 +454,15 @@ async fn transfer_call_inner_transfer() {
             format!("Received 10 from {}", alice.id()),
             format!("Transferring 10 to {}", charlie.id()),
             Nep141Event::FtTransfer(vec![FtTransferData {
-                old_owner_id: bob.id().as_str().parse().unwrap(),
-                new_owner_id: charlie.id().as_str().parse().unwrap(),
+                old_owner_id: bob.id().into(),
+                new_owner_id: charlie.id().into(),
                 amount: U128(10),
                 memo: None,
             }])
             .to_event_string(),
             Nep141Event::FtTransfer(vec![FtTransferData {
-                old_owner_id: bob.id().as_str().parse().unwrap(),
-                new_owner_id: alice.id().as_str().parse().unwrap(),
+                old_owner_id: bob.id().into(),
+                new_owner_id: alice.id().into(),
                 amount: U128(10),
                 memo: None,
             }])
@@ -514,16 +514,16 @@ async fn transfer_call_inner_panic() {
         result.logs().to_vec(),
         vec![
             Nep141Event::FtTransfer(vec![FtTransferData {
-                old_owner_id: alice.id().as_str().parse().unwrap(),
-                new_owner_id: bob.id().as_str().parse().unwrap(),
+                old_owner_id: alice.id().into(),
+                new_owner_id: bob.id().into(),
                 amount: U128(10),
                 memo: None,
             }])
             .to_event_string(),
             format!("Received 10 from {}", alice.id()),
             Nep141Event::FtTransfer(vec![FtTransferData {
-                old_owner_id: bob.id().as_str().parse().unwrap(),
-                new_owner_id: alice.id().as_str().parse().unwrap(),
+                old_owner_id: bob.id().into(),
+                new_owner_id: alice.id().into(),
                 amount: U128(10),
                 memo: None,
             }])

@@ -21,13 +21,13 @@ where
         f: impl FnOnce(&mut C) -> R,
     ) -> R {
         let token_ids =
-            contract.with_tokens_for_owner(action.account_id, |t| t.iter().collect::<Vec<_>>());
+            contract.with_tokens_for_owner(&action.account_id, |t| t.iter().collect::<Vec<_>>());
 
         contract
             .burn(&Nep171Burn {
-                token_ids: &token_ids,
-                owner_id: action.account_id,
-                memo: Some("storage forced unregistration"),
+                token_ids,
+                owner_id: action.account_id.clone(),
+                memo: Some("storage forced unregistration".into()),
             })
             .unwrap_or_else(|e| {
                 near_sdk::env::panic_str(&format!(

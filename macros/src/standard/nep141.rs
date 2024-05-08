@@ -84,10 +84,10 @@ pub fn expand(meta: Nep141Meta) -> Result<TokenStream, darling::Error> {
                 let amount: u128 = amount.into();
 
                 let transfer = Nep141Transfer {
-                    sender_id: &sender_id,
-                    receiver_id: &receiver_id,
+                    sender_id: sender_id.into(),
+                    receiver_id: receiver_id.into(),
                     amount,
-                    memo: memo.as_deref(),
+                    memo: memo.map(Into::into),
                     msg: None,
                     revert: false,
                 };
@@ -118,11 +118,11 @@ pub fn expand(meta: Nep141Meta) -> Result<TokenStream, darling::Error> {
                 let amount: u128 = amount.into();
 
                 let transfer = Nep141Transfer {
-                    sender_id: &sender_id,
-                    receiver_id: &receiver_id,
+                    sender_id: sender_id.into(),
+                    receiver_id: receiver_id.into(),
                     amount,
-                    memo: memo.as_deref(),
-                    msg: Some(&msg),
+                    memo: memo.map(Into::into),
+                    msg: Some(msg.clone().into()),
                     revert: false,
                 };
 
@@ -134,15 +134,15 @@ pub fn expand(meta: Nep141Meta) -> Result<TokenStream, darling::Error> {
                     .unwrap_or_else(|| #near_sdk::env::panic_str("Prepaid gas underflow."));
 
                 // Initiating receiver's call and the callback
-                ext_nep141_receiver::ext(transfer.receiver_id.clone())
+                ext_nep141_receiver::ext(transfer.receiver_id.clone().into())
                     .with_static_gas(receiver_gas)
-                    .ft_on_transfer(transfer.sender_id.clone(), transfer.amount.into(), msg.clone())
+                    .ft_on_transfer(transfer.sender_id.clone().into(), transfer.amount.into(), msg)
                     .then(
                         ext_nep141_resolver::ext(#near_sdk::env::current_account_id())
                             .with_static_gas(GAS_FOR_RESOLVE_TRANSFER)
                             .ft_resolve_transfer(
-                                transfer.sender_id.clone(),
-                                transfer.receiver_id.clone(),
+                                transfer.sender_id.clone().into(),
+                                transfer.receiver_id.clone().into(),
                                 transfer.amount.into(),
                             ),
                     )
@@ -190,8 +190,8 @@ pub fn expand(meta: Nep141Meta) -> Result<TokenStream, darling::Error> {
                     if receiver_balance > 0 {
                         let refund_amount = std::cmp::min(receiver_balance, unused_amount);
                         let transfer = Nep141Transfer {
-                            sender_id: &receiver_id,
-                            receiver_id: &sender_id,
+                            sender_id: receiver_id.into(),
+                            receiver_id: sender_id.into(),
                             amount: refund_amount,
                             memo: None,
                             msg: None,

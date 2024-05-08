@@ -36,8 +36,8 @@ impl Contract {
         let token_id = format!("token_{}", self.next_token_id);
         self.next_token_id += 1;
         self.mint_with_metadata(
-            token_id.clone(),
-            env::predecessor_account_id(),
+            &token_id,
+            &env::predecessor_account_id(),
             &TokenMetadata::new()
                 .title(format!("Token {token_id}"))
                 .description(format!("This is token {token_id}.")),

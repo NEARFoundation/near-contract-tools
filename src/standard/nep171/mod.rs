@@ -43,7 +43,7 @@ use near_sdk::{
     borsh::BorshSerialize,
     near,
     serde::{Deserialize, Serialize},
-    AccountId, BorshStorageKey, Gas,
+    AccountId, AccountIdRef, BorshStorageKey, Gas,
 };
 
 use crate::{hook::Hook, slot::Slot, standard::nep297::Event, DefaultStorageKey};
@@ -158,7 +158,7 @@ pub trait Nep171Controller {
     /// - Transferring a token "from" an account that does not own it.
     /// - Creating token IDs that did not previously exist.
     /// - Transferring a token to the account that already owns it.
-    fn transfer_unchecked(&mut self, token_ids: &[TokenId], receiver_id: &AccountId);
+    fn transfer_unchecked(&mut self, token_ids: &[TokenId], receiver_id: &AccountIdRef);
 
     /// Mints a new token `token_id` to `owner_id`. Emits events and runs
     /// relevant hooks.
@@ -166,7 +166,7 @@ pub trait Nep171Controller {
 
     /// Mints a new token `token_id` to `owner_id` without checking if the
     /// token already exists. Does not emit events or run hooks.
-    fn mint_unchecked(&mut self, token_ids: &[TokenId], owner_id: &AccountId);
+    fn mint_unchecked(&mut self, token_ids: &[TokenId], owner_id: &AccountIdRef);
 
     /// Burns tokens `token_ids` owned by `current_owner_id`. Emits events and
     /// runs relevant hooks.
@@ -214,16 +214,16 @@ impl<T: Nep171Controller> CheckExternalTransfer<T> for DefaultCheckExternalTrans
     ) -> Result<AccountId, Nep171TransferError> {
         let owner_id =
             contract
-                .token_owner(transfer.token_id)
+                .token_owner(&transfer.token_id)
                 .ok_or_else(|| TokenDoesNotExistError {
                     token_id: transfer.token_id.clone(),
                 })?;
 
         match transfer.authorization {
             Nep171TransferAuthorization::Owner => {
-                if transfer.sender_id != &owner_id {
+                if transfer.sender_id.as_ref() != owner_id {
                     return Err(TokenNotOwnedByExpectedOwnerError {
-                        expected_owner_id: transfer.sender_id.clone(),
+                        expected_owner_id: transfer.sender_id.clone().into(),
                         owner_id,
                         token_id: transfer.token_id.clone(),
                     }
@@ -233,7 +233,7 @@ impl<T: Nep171Controller> CheckExternalTransfer<T> for DefaultCheckExternalTrans
             Nep171TransferAuthorization::ApprovalId(approval_id) => {
                 return Err(SenderNotApprovedError {
                     owner_id,
-                    sender_id: transfer.sender_id.clone(),
+                    sender_id: transfer.sender_id.clone().into(),
                     token_id: transfer.token_id.clone(),
                     approval_id,
                 }
@@ -241,7 +241,7 @@ impl<T: Nep171Controller> CheckExternalTransfer<T> for DefaultCheckExternalTrans
             }
         }
 
-        if transfer.receiver_id == &owner_id {
+        if transfer.receiver_id.as_ref() == owner_id {
             return Err(TokenReceiverIsCurrentOwnerError {
                 owner_id,
                 token_id: transfer.token_id.clone(),
@@ -266,16 +266,16 @@ impl<T: Nep171ControllerInternal> Nep171Controller for T {
             Ok(current_owner_id) => {
                 Self::TransferHook::hook(self, transfer, |contract| {
                     contract.transfer_unchecked(
-                        std::array::from_ref(transfer.token_id),
-                        transfer.receiver_id,
+                        std::array::from_ref(&transfer.token_id),
+                        &transfer.receiver_id,
                     );
 
                     Nep171Event::NftTransfer(vec![NftTransferLog {
                         authorized_id: None,
-                        old_owner_id: current_owner_id,
+                        old_owner_id: current_owner_id.into(),
                         new_owner_id: transfer.receiver_id.clone(),
-                        token_ids: vec![transfer.token_id.clone()],
-                        memo: transfer.memo.map(ToString::to_string),
+                        token_ids: vec![transfer.token_id.clone().into()],
+                        memo: transfer.memo.clone(),
                     }])
                     .emit();
                 });
@@ -286,17 +286,17 @@ impl<T: Nep171ControllerInternal> Nep171Controller for T {
         }
     }
 
-    fn transfer_unchecked(&mut self, token_ids: &[TokenId], receiver_id: &AccountId) {
+    fn transfer_unchecked(&mut self, token_ids: &[TokenId], receiver_id: &AccountIdRef) {
         for token_id in token_ids {
             let mut slot = Self::slot_token_owner(token_id);
-            slot.write(receiver_id);
+            slot.write_deref(receiver_id);
         }
     }
 
-    fn mint_unchecked(&mut self, token_ids: &[TokenId], owner_id: &AccountId) {
+    fn mint_unchecked(&mut self, token_ids: &[TokenId], owner_id: &AccountIdRef) {
         token_ids.iter().for_each(|token_id| {
             let mut slot = Self::slot_token_owner(token_id);
-            slot.write(owner_id);
+            slot.write_deref(owner_id);
         });
     }
 
@@ -305,7 +305,7 @@ impl<T: Nep171ControllerInternal> Nep171Controller for T {
             return Ok(());
         }
 
-        for token_id in action.token_ids {
+        for token_id in &action.token_ids {
             let slot = Self::slot_token_owner(token_id);
             if slot.exists() {
                 return Err(TokenAlreadyExistsError {
@@ -316,12 +316,12 @@ impl<T: Nep171ControllerInternal> Nep171Controller for T {
         }
 
         Self::MintHook::hook(self, action, |contract| {
-            contract.mint_unchecked(action.token_ids, action.receiver_id);
+            contract.mint_unchecked(&action.token_ids, &action.receiver_id);
 
             Nep171Event::NftMint(vec![NftMintLog {
-                token_ids: action.token_ids.iter().map(ToString::to_string).collect(),
+                token_ids: action.token_ids.iter().map(Into::into).collect(),
                 owner_id: action.receiver_id.clone(),
-                memo: action.memo.map(ToString::to_string),
+                memo: action.memo.clone(),
             }])
             .emit();
 
@@ -334,32 +334,32 @@ impl<T: Nep171ControllerInternal> Nep171Controller for T {
             return Ok(());
         }
 
-        for token_id in action.token_ids {
+        for token_id in &action.token_ids {
             if let Some(actual_owner_id) = self.token_owner(token_id) {
-                if &actual_owner_id != action.owner_id {
+                if actual_owner_id != action.owner_id.as_ref() {
                     return Err(TokenNotOwnedByExpectedOwnerError {
-                        expected_owner_id: action.owner_id.clone(),
+                        expected_owner_id: action.owner_id.clone().into(),
                         owner_id: actual_owner_id,
-                        token_id: (*token_id).clone(),
+                        token_id: token_id.clone(),
                     }
                     .into());
                 }
             } else {
                 return Err(TokenDoesNotExistError {
-                    token_id: (*token_id).clone(),
+                    token_id: token_id.clone(),
                 }
                 .into());
             }
         }
 
         Self::BurnHook::hook(self, action, |contract| {
-            contract.burn_unchecked(action.token_ids);
+            contract.burn_unchecked(&action.token_ids);
 
             Nep171Event::NftBurn(vec![NftBurnLog {
-                token_ids: action.token_ids.iter().map(ToString::to_string).collect(),
+                token_ids: action.token_ids.iter().map(Into::into).collect(),
                 owner_id: action.owner_id.clone(),
                 authorized_id: None,
-                memo: action.memo.map(ToString::to_string),
+                memo: action.memo.clone(),
             }])
             .emit();
 
