@@ -107,12 +107,12 @@ impl<C> super::Action<C> for NativeTransactionAction {
                         .unwrap_or(near_sdk::Allowance::Unlimited),
                     receiver_id,
                     function_names.join(","),
-                    nonce.map(Into::into).unwrap_or(0),
+                    nonce.map_or(0, Into::into),
                 ),
                 PromiseAction::AddFullAccessKey { public_key, nonce } => promise
                     .add_full_access_key_with_nonce(
                         public_key.parse().unwrap(),
-                        nonce.map(Into::into).unwrap_or(0),
+                        nonce.map_or(0, Into::into),
                     ),
                 PromiseAction::CreateAccount => promise.create_account(),
                 PromiseAction::DeployContract { code } => promise.deploy_contract(code.0),

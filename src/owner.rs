@@ -78,21 +78,25 @@ enum StorageKey {
 /// Internal functions for [`Owner`]. Using these methods may result in unexpected behavior.
 pub trait OwnerInternal {
     /// Storage root
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::new(DefaultStorageKey::Owner)
     }
 
     /// Storage slot for initialization state
+    #[must_use]
     fn slot_is_initialized() -> Slot<bool> {
         Self::root().field(StorageKey::IsInitialized)
     }
 
     /// Storage slot for owner account ID
+    #[must_use]
     fn slot_owner() -> Slot<AccountId> {
         Self::root().field(StorageKey::Owner)
     }
 
     /// Storage slot for proposed owner account ID
+    #[must_use]
     fn slot_proposed_owner() -> Slot<AccountId> {
         Self::root().field(StorageKey::ProposedOwner)
     }

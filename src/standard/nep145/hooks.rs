@@ -30,7 +30,7 @@ fn apply_storage_accounting_hook<C: Nep145Controller, R>(
 
     contract
         .storage_accounting(account_id, storage_usage_start)
-        .unwrap_or_else(|e| env::panic_str(&format!("Storage accounting error: {}", e)));
+        .unwrap_or_else(|e| env::panic_str(&format!("Storage accounting error: {e}")));
 
     r
 }

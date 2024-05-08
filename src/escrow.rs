@@ -56,6 +56,7 @@ pub trait EscrowInternal {
     type State: BorshSerialize + BorshDeserialize;
 
     /// Retrieve the state root.
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::root(DefaultStorageKey::Escrow)
     }
@@ -82,7 +83,7 @@ pub trait EscrowInternal {
 }
 
 /// Some escrowable capabilities, with a simple locking/unlocking mechanism.
-/// 
+///
 /// If you add additional `Approve` capabilities here, you can make use of a
 /// step-wise locking system.
 pub trait Escrow {

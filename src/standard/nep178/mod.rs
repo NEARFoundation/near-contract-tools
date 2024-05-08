@@ -129,16 +129,19 @@ pub trait Nep178ControllerInternal {
         Self: Sized;
 
     /// Storage root.
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::root(DefaultStorageKey::Nep178)
     }
 
     /// Storage slot for token approvals.
+    #[must_use]
     fn slot_token_approvals(token_id: &TokenId) -> Slot<TokenApprovals> {
         Self::root().field(StorageKey::TokenApprovals(token_id))
     }
 
     /// Storage slot for token approvals `UnorderedMap`.
+    #[must_use]
     fn slot_token_approvals_unordered_map(
         token_id: &TokenId,
     ) -> Slot<UnorderedMap<AccountId, ApprovalId>> {
@@ -275,9 +278,8 @@ impl<T: Nep178ControllerInternal + Nep171Controller> Nep178Controller for T {
 
     fn revoke_unchecked(&mut self, token_id: &TokenId, account_id: &AccountIdRef) {
         let mut slot = Self::slot_token_approvals(token_id);
-        let mut approvals = match slot.read() {
-            Some(approvals) => approvals,
-            None => return,
+        let Some(mut approvals) = slot.read() else {
+            return;
         };
 
         let old = approvals.accounts.remove(&account_id.into());
@@ -344,9 +346,8 @@ impl<T: Nep178ControllerInternal + Nep171Controller> Nep178Controller for T {
 
     fn revoke_all_unchecked(&mut self, token_id: &TokenId) {
         let mut slot = Self::slot_token_approvals(token_id);
-        let mut approvals = match slot.read() {
-            Some(approvals) => approvals,
-            None => return,
+        let Some(mut approvals) = slot.read() else {
+            return;
         };
 
         if !approvals.accounts.is_empty() {
@@ -368,9 +369,8 @@ impl<T: Nep178ControllerInternal + Nep171Controller> Nep178Controller for T {
 
     fn get_approvals_for(&self, token_id: &TokenId) -> HashMap<AccountId, ApprovalId> {
         let slot = Self::slot_token_approvals(token_id);
-        let approvals = match slot.read() {
-            Some(approvals) => approvals,
-            None => return HashMap::default(),
+        let Some(approvals) = slot.read() else {
+            return HashMap::default();
         };
 
         approvals.accounts.into_iter().collect()

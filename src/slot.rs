@@ -15,7 +15,7 @@ use crate::utils::prefix_key;
 #[near]
 /// A storage slot, composed of a storage location (key) and a data type
 pub struct Slot<T> {
-    /// The storage key this slot controls
+    /// The storage key this slot controls.
     pub key: Vec<u8>,
     #[borsh(skip)]
     _marker: PhantomData<T>,
@@ -65,6 +65,7 @@ impl<T> Slot<T> {
     ///
     /// If the data in the slot is not parsable into the new type, methods like
     /// [`Slot::read`] and [`Slot::take`] will panic.
+    #[must_use]
     pub fn transmute<U>(&self) -> Slot<U> {
         Slot {
             key: self.key.clone(),
@@ -78,17 +79,19 @@ impl<T> Slot<T> {
     }
 
     /// Read raw bytes from the slot. No type checking or parsing.
+    #[must_use]
     pub fn read_raw(&self) -> Option<Vec<u8>> {
         env::storage_read(&self.key)
     }
 
     /// Returns `true` if this slot's key is currently present in the smart
-    /// contract storage, `false` otherwise
+    /// contract storage, `false` otherwise.
+    #[must_use]
     pub fn exists(&self) -> bool {
         env::storage_has_key(&self.key)
     }
 
-    /// Removes the managed key from storage
+    /// Removes the managed key from storage.
     pub fn remove(&mut self) -> bool {
         env::storage_remove(&self.key)
     }
@@ -129,11 +132,21 @@ impl<T: BorshSerialize> Slot<T> {
 
 impl<T: BorshDeserialize> Slot<T> {
     /// Reads a value from storage, if present.
+    ///
+    /// # Panics
+    ///
+    /// If Borsh deserialization fails.
+    #[must_use]
     pub fn read(&self) -> Option<T> {
         self.read_raw().map(|v| T::try_from_slice(&v).unwrap())
     }
 
     /// Removes a value from storage and returns it if present.
+    ///
+    /// # Panics
+    ///
+    /// If Borsh deserialization fails.
+    #[must_use]
     pub fn take(&mut self) -> Option<T> {
         if self.remove() {
             // unwrap should be safe if remove returns true
@@ -146,6 +159,11 @@ impl<T: BorshDeserialize> Slot<T> {
 
 impl<T: BorshSerialize + BorshDeserialize> Slot<T> {
     /// Writes a value to storage and returns the evicted value, if present.
+    ///
+    /// # Panics
+    ///
+    /// If Borsh serialization fails.
+    #[must_use]
     pub fn swap(&mut self, value: &T) -> Option<T> {
         let v = borsh::to_vec(&value).unwrap();
 

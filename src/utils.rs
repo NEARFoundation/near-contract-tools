@@ -11,6 +11,7 @@ use near_sdk::{env, require, NearToken, Promise};
 ///
 /// assert_eq!(prefix_key(b"p", b"key"), b"pkey");
 /// ```
+#[must_use]
 pub fn prefix_key(prefix: &[u8], key: &[u8]) -> Vec<u8> {
     [prefix, key].concat()
 }
@@ -44,6 +45,7 @@ pub fn prefix_key(prefix: &[u8], key: &[u8]) -> Vec<u8> {
 /// // Attached deposit must cover storage fee or this function will panic
 /// apply_storage_fee_and_refund(initial_storage_usage, additional_fees);
 /// ```
+#[must_use]
 pub fn apply_storage_fee_and_refund(
     initial_storage_usage: u64,
     additional_fees: u128,
@@ -76,10 +78,10 @@ pub fn apply_storage_fee_and_refund(
     let refund = attached_deposit.saturating_sub(total_required_deposit);
 
     // Send refund transfer if required
-    if !refund.is_zero() {
-        Some(Promise::new(env::predecessor_account_id()).transfer(refund))
-    } else {
+    if refund.is_zero() {
         None
+    } else {
+        Some(Promise::new(env::predecessor_account_id()).transfer(refund))
     }
 }
 

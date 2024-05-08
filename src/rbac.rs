@@ -49,6 +49,7 @@ pub trait RbacInternal {
     type Role: BorshSerialize + IntoStorageKey;
 
     /// Storage slot namespace for items.
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::new(DefaultStorageKey::Rbac)
     }
@@ -130,8 +131,7 @@ impl<I: RbacInternal> Rbac for I {
     fn has_role(account_id: &AccountId, role: &Self::Role) -> bool {
         Self::slot_members_of(role)
             .read()
-            .map(|set| set.contains(account_id))
-            .unwrap_or(false)
+            .is_some_and(|set| set.contains(account_id))
     }
 
     fn add_role(&mut self, account_id: &AccountId, role: &Self::Role) {
@@ -167,6 +167,7 @@ pub struct Iter {
 
 impl Iter {
     /// Creates a new iterator from an `UnorderedSet`.
+    #[must_use]
     pub fn new(s: UnorderedSet<AccountId>) -> Self {
         Self {
             inner_collection: s,

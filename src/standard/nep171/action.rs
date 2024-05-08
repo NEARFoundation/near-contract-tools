@@ -30,6 +30,7 @@ impl<'a> Nep171Mint<'a> {
     }
 
     /// Add a memo string.
+    #[must_use]
     pub fn memo(self, memo: impl Into<Cow<'a, str>>) -> Self {
         Self {
             memo: Some(memo.into()),
@@ -61,6 +62,7 @@ impl<'a> Nep171Burn<'a> {
     }
 
     /// Add a memo string.
+    #[must_use]
     pub fn memo(self, memo: impl Into<Cow<'a, str>>) -> Self {
         Self {
             memo: Some(memo.into()),
@@ -110,6 +112,7 @@ impl<'a> Nep171Transfer<'a> {
     }
 
     /// Add a memo string.
+    #[must_use]
     pub fn memo(self, memo: impl Into<Cow<'a, str>>) -> Self {
         Self {
             memo: Some(memo.into()),
@@ -118,6 +121,7 @@ impl<'a> Nep171Transfer<'a> {
     }
 
     /// Add a message string.
+    #[must_use]
     pub fn msg(self, msg: impl Into<Cow<'a, str>>) -> Self {
         Self {
             msg: Some(msg.into()),

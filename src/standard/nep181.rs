@@ -65,16 +65,19 @@ enum StorageKey<'a> {
 /// Internal functions for [`Nep181Controller`].
 pub trait Nep181ControllerInternal {
     /// Storage root.
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::root(DefaultStorageKey::Nep181)
     }
 
     /// Storage slot for all tokens.
+    #[must_use]
     fn slot_tokens() -> Slot<UnorderedSet<TokenId>> {
         Self::root().field(StorageKey::Tokens)
     }
 
     /// Storage slot for tokens owned by an account.
+    #[must_use]
     fn slot_owner_tokens(owner_id: &AccountIdRef) -> Slot<UnorderedSet<TokenId>> {
         Self::root().field(StorageKey::OwnerTokens(owner_id))
     }

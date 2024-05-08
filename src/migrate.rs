@@ -37,6 +37,7 @@ pub trait MigrateController {
     /// Deserializes the old schema from storage.
     ///
     /// It is probably not necessary to override this function.
+    #[must_use]
     fn deserialize_old_schema() -> Self::OldSchema {
         env::state_read::<Self::OldSchema>()
             .unwrap_or_else(|| env::panic_str("Failed to deserialize old state"))

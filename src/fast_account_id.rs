@@ -28,6 +28,7 @@ pub struct FastAccountId(Rc<str>);
 
 impl FastAccountId {
     /// Creates a new `FastAccountId` from a `&str` without performing any checks.
+    #[must_use]
     pub fn new_unchecked(account_id: &str) -> Self {
         Self(Rc::from(account_id))
     }
@@ -195,18 +196,18 @@ mod tests {
         append_sub_byte(&mut v, 0, 0b111, 3);
         append_sub_byte(&mut v, 3, 0b010, 3);
         append_sub_byte(&mut v, 6, 0b110, 3);
-        append_sub_byte(&mut v, 9, 0b1110101, 7);
+        append_sub_byte(&mut v, 9, 0b111_0101, 7);
 
-        assert_eq!(v, vec![0b10010111, 0b11101011]);
+        assert_eq!(v, vec![0b1001_0111, 0b1110_1011]);
     }
 
     #[test]
     fn test_read_sub_byte() {
-        let v = vec![0b10010111, 0b11101011];
+        let v = vec![0b1001_0111, 0b1110_1011];
         assert_eq!(read_sub_byte(&v, 0, 3), 0b111);
         assert_eq!(read_sub_byte(&v, 3, 3), 0b010);
         assert_eq!(read_sub_byte(&v, 6, 3), 0b110);
-        assert_eq!(read_sub_byte(&v, 9, 7), 0b1110101);
+        assert_eq!(read_sub_byte(&v, 9, 7), 0b111_0101);
     }
 
     #[test]

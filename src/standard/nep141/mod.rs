@@ -70,6 +70,7 @@ impl<'a> Nep141Transfer<'a> {
     }
 
     /// Add a memo string.
+    #[must_use]
     pub fn memo(self, memo: impl Into<Cow<'a, str>>) -> Self {
         Self {
             memo: Some(memo.into()),
@@ -78,6 +79,7 @@ impl<'a> Nep141Transfer<'a> {
     }
 
     /// Add a message string.
+    #[must_use]
     pub fn msg(self, msg: impl Into<Cow<'a, str>>) -> Self {
         Self {
             msg: Some(msg.into()),
@@ -87,6 +89,7 @@ impl<'a> Nep141Transfer<'a> {
 
     /// Returns `true` if this transfer comes from a `ft_transfer_call`
     /// call, `false` otherwise.
+    #[must_use]
     pub fn is_transfer_call(&self) -> bool {
         self.msg.is_some()
     }
@@ -115,6 +118,7 @@ impl<'a> Nep141Mint<'a> {
     }
 
     /// Add a memo string.
+    #[must_use]
     pub fn memo(self, memo: impl Into<Cow<'a, str>>) -> Self {
         Self {
             memo: Some(memo.into()),
@@ -146,6 +150,7 @@ impl<'a> Nep141Burn<'a> {
     }
 
     /// Add a memo string.
+    #[must_use]
     pub fn memo(self, memo: impl Into<Cow<'a, str>>) -> Self {
         Self {
             memo: Some(memo.into()),
@@ -170,16 +175,19 @@ pub trait Nep141ControllerInternal {
         Self: Sized;
 
     /// Root storage slot.
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::new(DefaultStorageKey::Nep141)
     }
 
     /// Slot for account data.
+    #[must_use]
     fn slot_account(account_id: &AccountIdRef) -> Slot<u128> {
         Self::root().field(StorageKey::Account(account_id))
     }
 
     /// Slot for storing total supply.
+    #[must_use]
     fn slot_total_supply() -> Slot<u128> {
         Self::root().field(StorageKey::TotalSupply)
     }

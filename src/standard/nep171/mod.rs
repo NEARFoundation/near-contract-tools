@@ -103,11 +103,13 @@ pub trait Nep171ControllerInternal {
         Self: Sized;
 
     /// Root storage slot.
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::root(DefaultStorageKey::Nep171)
     }
 
     /// Storage slot for the owner of a token.
+    #[must_use]
     fn slot_token_owner(token_id: &TokenId) -> Slot<AccountId> {
         Self::root().field(StorageKey::TokenOwner(token_id))
     }
@@ -314,10 +316,10 @@ impl<T: Nep171ControllerInternal> Nep171Controller for T {
     }
 
     fn mint_unchecked(&mut self, token_ids: &[TokenId], owner_id: &AccountIdRef) {
-        token_ids.iter().for_each(|token_id| {
+        for token_id in token_ids {
             let mut slot = Self::slot_token_owner(token_id);
             slot.write_deref(owner_id);
-        });
+        }
     }
 
     fn mint(&mut self, action: &Nep171Mint<'_>) -> Result<(), Nep171MintError> {

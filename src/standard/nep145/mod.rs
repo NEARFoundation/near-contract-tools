@@ -53,6 +53,7 @@ pub struct StorageBalanceBounds {
 
 impl StorageBalanceBounds {
     /// Restricts a balance to be within the bounds.
+    #[must_use]
     pub fn bound(&self, balance: NearToken, registration_only: bool) -> NearToken {
         if registration_only {
             self.min
@@ -98,16 +99,19 @@ pub trait Nep145ControllerInternal {
         Self: Sized;
 
     /// Root storage slot.
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::new(DefaultStorageKey::Nep145)
     }
 
     /// Storage slot for balance bounds.
+    #[must_use]
     fn slot_balance_bounds() -> Slot<StorageBalanceBounds> {
         Slot::new(StorageKey::BalanceBounds)
     }
 
     /// Storage slot for individual account balance.
+    #[must_use]
     fn slot_account(account_id: &AccountIdRef) -> Slot<StorageBalance> {
         Slot::new(StorageKey::Account(account_id))
     }
@@ -211,9 +215,9 @@ pub trait Nep145Controller {
 
     /// Convenience method for performing storage accounting, to be used after
     /// storage writes that are to be debited from the account's balance.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// See: [`lock_storage`](Nep145Controller::lock_storage) and [`unlock_storage`](Nep145Controller::unlock_storage).
     fn storage_accounting(
         &mut self,

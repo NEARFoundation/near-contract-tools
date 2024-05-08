@@ -41,6 +41,7 @@ pub struct Configuration<Au: AccountAuthorizer> {
 
 impl<Au: AccountAuthorizer> Configuration<Au> {
     /// Create an approval scheme with the given threshold
+    #[must_use]
     pub fn new(threshold: u8, validity_period_nanoseconds: u64) -> Self {
         Self {
             threshold,
@@ -50,6 +51,7 @@ impl<Au: AccountAuthorizer> Configuration<Au> {
     }
 
     /// Is the given approval state still considered valid?
+    #[must_use]
     pub fn is_within_validity_period(&self, approval_state: &ApprovalState) -> bool {
         if self.validity_period_nanoseconds == 0 {
             true
@@ -80,6 +82,7 @@ impl Default for ApprovalState {
 
 impl ApprovalState {
     /// Creates an [`ApprovalState`] with the current network timestamp.
+    #[must_use]
     pub fn new() -> Self {
         Self {
             approved_by: Vec::new(),
@@ -306,7 +309,7 @@ mod tests {
         }
 
         pub fn remove(&mut self, request_id: u32) {
-            self.remove_request(request_id).unwrap()
+            self.remove_request(request_id).unwrap();
         }
     }
 

@@ -37,6 +37,7 @@ pub struct ContractMetadata {
 
 impl ContractMetadata {
     /// Creates a new metadata struct.
+    #[must_use]
     pub fn new(name: String, symbol: String, decimals: u8) -> Self {
         Self {
             spec: FT_METADATA_SPEC.into(),
@@ -50,42 +51,49 @@ impl ContractMetadata {
     }
 
     /// Sets the spec field.
+    #[must_use]
     pub fn spec(mut self, spec: String) -> Self {
         self.spec = spec;
         self
     }
 
     /// Sets the name field.
+    #[must_use]
     pub fn name(mut self, name: String) -> Self {
         self.name = name;
         self
     }
 
     /// Sets the symbol field.
+    #[must_use]
     pub fn symbol(mut self, symbol: String) -> Self {
         self.symbol = symbol;
         self
     }
 
     /// Sets the icon field.
+    #[must_use]
     pub fn icon(mut self, icon: String) -> Self {
         self.icon = Some(icon);
         self
     }
 
     /// Sets the reference field.
+    #[must_use]
     pub fn reference(mut self, reference: String) -> Self {
         self.reference = Some(reference);
         self
     }
 
-    /// Sets the reference_hash field.
+    /// Sets the `reference_hash` field.
+    #[must_use]
     pub fn reference_hash(mut self, reference_hash: Base64VecU8) -> Self {
         self.reference_hash = Some(reference_hash);
         self
     }
 
     /// Sets the decimals field.
+    #[must_use]
     pub fn decimals(mut self, decimals: u8) -> Self {
         self.decimals = decimals;
         self
@@ -101,11 +109,13 @@ enum StorageKey {
 /// Internal functions for [`Nep148Controller`].
 pub trait Nep148ControllerInternal {
     /// Returns the root storage slot for NEP-148.
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::new(DefaultStorageKey::Nep148)
     }
 
     /// Returns the storage slot for NEP-148 metadata.
+    #[must_use]
     fn metadata() -> Slot<ContractMetadata> {
         Self::root().field(StorageKey::Metadata)
     }

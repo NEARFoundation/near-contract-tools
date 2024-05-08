@@ -52,6 +52,7 @@ impl ContractMetadata {
 
     /// Creates a new contract metadata, specifying the name, symbol, and
     /// optional base URI. Other fields are set to `None`.
+    #[must_use]
     pub fn new(name: String, symbol: String, base_uri: Option<String>) -> Self {
         Self {
             spec: Self::SPEC.to_string(),
@@ -98,77 +99,90 @@ pub struct TokenMetadata {
 // Builder pattern for TokenMetadata.
 impl TokenMetadata {
     /// Create a new `TokenMetadata` with all fields set to `None`.
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Set the title.
+    #[must_use]
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
     /// Set the description.
+    #[must_use]
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
     }
 
     /// Set the media.
+    #[must_use]
     pub fn media(mut self, media: impl Into<String>) -> Self {
         self.media = Some(media.into());
         self
     }
 
     /// Set the media hash.
+    #[must_use]
     pub fn media_hash(mut self, media_hash: impl Into<String>) -> Self {
         self.media_hash = Some(media_hash.into());
         self
     }
 
     /// Set the copies.
+    #[must_use]
     pub fn copies(mut self, copies: impl Into<U64>) -> Self {
         self.copies = Some(copies.into());
         self
     }
 
     /// Set the time the token was issued.
+    #[must_use]
     pub fn issued_at(mut self, issued_at: impl Into<U64>) -> Self {
         self.issued_at = Some(issued_at.into());
         self
     }
 
     /// Set the time the token expires.
+    #[must_use]
     pub fn expires_at(mut self, expires_at: impl Into<U64>) -> Self {
         self.expires_at = Some(expires_at.into());
         self
     }
 
     /// Set the time the token starts being valid.
+    #[must_use]
     pub fn starts_at(mut self, starts_at: impl Into<U64>) -> Self {
         self.starts_at = Some(starts_at.into());
         self
     }
 
     /// Set the time the token was last updated.
+    #[must_use]
     pub fn updated_at(mut self, updated_at: impl Into<U64>) -> Self {
         self.updated_at = Some(updated_at.into());
         self
     }
 
     /// Set the extra data.
+    #[must_use]
     pub fn extra(mut self, extra: impl Into<String>) -> Self {
         self.extra = Some(extra.into());
         self
     }
 
     /// Set the reference.
+    #[must_use]
     pub fn reference(mut self, reference: impl Into<String>) -> Self {
         self.reference = Some(reference.into());
         self
     }
 
     /// Set the reference hash.
+    #[must_use]
     pub fn reference_hash(mut self, reference_hash: impl Into<String>) -> Self {
         self.reference_hash = Some(reference_hash.into());
         self
@@ -208,16 +222,19 @@ enum StorageKey<'a> {
 /// Internal functions for [`Nep177Controller`].
 pub trait Nep177ControllerInternal {
     /// Storage root.
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::root(DefaultStorageKey::Nep177)
     }
 
     /// Storage slot for contract metadata.
+    #[must_use]
     fn slot_contract_metadata() -> Slot<ContractMetadata> {
         Self::root().field(StorageKey::ContractMetadata)
     }
 
     /// Storage slot for token metadata.
+    #[must_use]
     fn slot_token_metadata(token_id: &TokenId) -> Slot<TokenMetadata> {
         Self::root().field(StorageKey::TokenMetadata(token_id))
     }
@@ -228,7 +245,7 @@ pub trait Nep177Controller {
     /// Mint a new token with metadata.
     ///
     /// # Errors
-    /// 
+    ///
     /// - If the token ID already exists.
     fn mint_with_metadata(
         &mut self,
@@ -238,9 +255,9 @@ pub trait Nep177Controller {
     ) -> Result<(), Nep171MintError>;
 
     /// Burn a token with metadata.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the token ID does not exist.
     /// - If the token is not owned by the expected owner.
     fn burn_with_metadata(
@@ -258,9 +275,9 @@ pub trait Nep177Controller {
     );
 
     /// Sets the metadata for a token ID and emits an [`Nep171Event::NftMetadataUpdate`] event.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the token does not exist.
     fn set_token_metadata(
         &mut self,

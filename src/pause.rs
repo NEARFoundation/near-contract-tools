@@ -47,11 +47,13 @@ pub enum PauseEvent {
 /// Internal functions for [`Pause`]. Using these methods may result in unexpected behavior.
 pub trait PauseInternal {
     /// Storage root
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::new(DefaultStorageKey::Pause)
     }
 
     /// Storage slot for pause state
+    #[must_use]
     fn slot_paused() -> Slot<bool> {
         Self::root().transmute()
     }

@@ -39,9 +39,9 @@ pub trait ApprovalConfiguration<A, S> {
     type ExecutionEligibilityError;
 
     /// Has the request reached full approval?
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if the request is not approved for execution.
     fn is_approved_for_execution(
         &self,
@@ -49,16 +49,16 @@ pub trait ApprovalConfiguration<A, S> {
     ) -> Result<(), Self::ExecutionEligibilityError>;
 
     /// Can this request be removed by an allowed account?
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if the request cannot be removed.
     fn is_removable(&self, action_request: &ActionRequest<A, S>) -> Result<(), Self::RemovalError>;
 
     /// Is the account allowed to execute, approve, or remove this request?
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if the account is not allowed to perform such an action.
     fn is_account_authorized(
         &self,
@@ -67,9 +67,9 @@ pub trait ApprovalConfiguration<A, S> {
     ) -> Result<(), Self::AuthorizationError>;
 
     /// Modify `action_request.approval_state` in-place to increase approval.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if the request cannot be approved.
     fn try_approve_with_authorized_account(
         &self,
@@ -151,22 +151,26 @@ where
     C: ApprovalConfiguration<A, S> + BorshDeserialize + BorshSerialize,
 {
     /// Storage root
+    #[must_use]
     fn root() -> Slot<()> {
         Slot::new(DefaultStorageKey::ApprovalManager)
     }
 
     /// Because requests will be deleted from the requests collection,
     /// maintain a simple counter to guarantee unique IDs
+    #[must_use]
     fn slot_next_request_id() -> Slot<u32> {
         Self::root().field(ApprovalStorageKey::NextRequestId)
     }
 
     /// Approval context included in relevant approval-related calls
+    #[must_use]
     fn slot_config() -> Slot<C> {
         Self::root().field(ApprovalStorageKey::Config)
     }
 
     /// Current list of pending action requests.
+    #[must_use]
     fn slot_request(request_id: u32) -> Slot<ActionRequest<A, S>> {
         Self::root().field(ApprovalStorageKey::Request(request_id))
     }
@@ -216,7 +220,7 @@ where
         request_id: u32,
     ) -> Result<(), ApprovalError<C::AuthorizationError, C::ApprovalError>>;
 
-    /// Tries to remove the action request indicated by request_id.
+    /// Tries to remove the action request indicated by `request_id`.
     fn remove_request(
         &mut self,
         request_id: u32,
@@ -511,7 +515,7 @@ mod tests {
 
         predecessor(&alice);
         let request_id = contract
-            .create_request(MyAction::SayHello, Default::default())
+            .create_request(MyAction::SayHello, MultisigApprovalState::default())
             .unwrap();
 
         assert_eq!(request_id, 0);
@@ -540,7 +544,7 @@ mod tests {
 
         predecessor(&alice);
         let request_id = contract
-            .create_request(MyAction::SayHello, Default::default())
+            .create_request(MyAction::SayHello, MultisigApprovalState::default())
             .unwrap();
 
         contract.approve_request(request_id).unwrap();
@@ -560,7 +564,7 @@ mod tests {
         predecessor(&alice);
 
         let request_id = contract
-            .create_request(MyAction::SayHello, Default::default())
+            .create_request(MyAction::SayHello, MultisigApprovalState::default())
             .unwrap();
 
         contract.approve_request(request_id).unwrap();
@@ -581,7 +585,7 @@ mod tests {
         predecessor(&alice);
 
         let request_id = contract
-            .create_request(MyAction::SayHello, Default::default())
+            .create_request(MyAction::SayHello, MultisigApprovalState::default())
             .unwrap();
 
         contract.approve_request(request_id).unwrap();
@@ -605,7 +609,7 @@ mod tests {
 
         predecessor(&alice);
         let request_id = contract
-            .create_request(MyAction::SayGoodbye, Default::default())
+            .create_request(MyAction::SayGoodbye, MultisigApprovalState::default())
             .unwrap();
 
         contract.approve_request(request_id).unwrap();
