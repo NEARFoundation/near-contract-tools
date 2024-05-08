@@ -43,7 +43,7 @@ use near_sdk::{
     borsh::BorshSerialize,
     near,
     serde::{Deserialize, Serialize},
-    AccountId, AccountIdRef, BorshStorageKey, Gas,
+    AccountId, AccountIdRef, BorshStorageKey, Gas, NearSchema,
 };
 
 use crate::{hook::Hook, slot::Slot, standard::nep297::Event, DefaultStorageKey};
@@ -415,7 +415,7 @@ impl<T: Nep171ControllerInternal> Nep171Controller for T {
 }
 
 /// Token information structure.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, NearSchema)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Token {
     /// Token ID.
