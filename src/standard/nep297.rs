@@ -4,7 +4,7 @@ use std::borrow::Cow;
 
 use near_sdk::{
     serde::{self, Deserialize, Serialize},
-    serde_json,
+    serde_json, NearSchema,
 };
 
 /// Emit events according to the [NEP-297 event standard](https://nomicon.io/Standards/EventsFormat).
@@ -74,7 +74,7 @@ pub trait ToEventLog {
 
 /// NEP-297 Event Log Data
 /// <https://github.com/near/NEPs/blob/master/neps/nep-0297.md#specification>
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, NearSchema)]
 #[serde(crate = "near_sdk::serde")]
 pub struct EventLog<'a, T> {
     /// Name of the event standard, e.g. `"nep171"`.
