@@ -16,11 +16,7 @@ impl MyNftContract {
     pub fn new() -> Self {
         let mut contract = Self {};
 
-        contract.set_contract_metadata(&ContractMetadata::new(
-            "My NFT".to_string(),
-            "MNFT".to_string(),
-            None,
-        ));
+        contract.set_contract_metadata(&ContractMetadata::new("My NFT", "MNFT", None));
 
         contract
     }
@@ -43,11 +39,7 @@ impl MyFtContract {
     pub fn new() -> Self {
         let mut contract = Self {};
 
-        contract.set_metadata(&ContractMetadata::new(
-            "My Fungible Token".into(),
-            "MYFT".into(),
-            24,
-        ));
+        contract.set_metadata(&ContractMetadata::new("My Fungible Token", "MYFT", 24));
 
         contract
     }
@@ -168,11 +160,7 @@ impl MyFt {
     pub fn new() -> Self {
         let mut contract = Self {};
 
-        contract.set_metadata(&ContractMetadata::new(
-            "My Fungible Token".to_string(),
-            "MYFT".to_string(),
-            24,
-        ));
+        contract.set_metadata(&ContractMetadata::new("My Fungible Token", "MYFT", 24));
 
         contract
     }

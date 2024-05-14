@@ -38,11 +38,11 @@ pub struct ContractMetadata {
 impl ContractMetadata {
     /// Creates a new metadata struct.
     #[must_use]
-    pub fn new(name: String, symbol: String, decimals: u8) -> Self {
+    pub fn new(name: impl Into<String>, symbol: impl Into<String>, decimals: u8) -> Self {
         Self {
             spec: FT_METADATA_SPEC.into(),
-            name,
-            symbol,
+            name: name.into(),
+            symbol: symbol.into(),
             icon: None,
             reference: None,
             reference_hash: None,
@@ -52,43 +52,43 @@ impl ContractMetadata {
 
     /// Sets the spec field.
     #[must_use]
-    pub fn spec(mut self, spec: String) -> Self {
-        self.spec = spec;
+    pub fn spec(mut self, spec: impl Into<String>) -> Self {
+        self.spec = spec.into();
         self
     }
 
     /// Sets the name field.
     #[must_use]
-    pub fn name(mut self, name: String) -> Self {
-        self.name = name;
+    pub fn name(mut self, name: impl Into<String>) -> Self {
+        self.name = name.into();
         self
     }
 
     /// Sets the symbol field.
     #[must_use]
-    pub fn symbol(mut self, symbol: String) -> Self {
-        self.symbol = symbol;
+    pub fn symbol(mut self, symbol: impl Into<String>) -> Self {
+        self.symbol = symbol.into();
         self
     }
 
     /// Sets the icon field.
     #[must_use]
-    pub fn icon(mut self, icon: String) -> Self {
-        self.icon = Some(icon);
+    pub fn icon(mut self, icon: impl Into<String>) -> Self {
+        self.icon = Some(icon.into());
         self
     }
 
     /// Sets the reference field.
     #[must_use]
-    pub fn reference(mut self, reference: String) -> Self {
-        self.reference = Some(reference);
+    pub fn reference(mut self, reference: impl Into<String>) -> Self {
+        self.reference = Some(reference.into());
         self
     }
 
     /// Sets the `reference_hash` field.
     #[must_use]
-    pub fn reference_hash(mut self, reference_hash: Base64VecU8) -> Self {
-        self.reference_hash = Some(reference_hash);
+    pub fn reference_hash(mut self, reference_hash: impl Into<Base64VecU8>) -> Self {
+        self.reference_hash = Some(reference_hash.into());
         self
     }
 

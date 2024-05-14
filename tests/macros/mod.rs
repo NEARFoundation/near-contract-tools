@@ -413,11 +413,7 @@ mod pausable_fungible_token {
         pub fn new() -> Self {
             let mut contract = Self { storage_usage: 0 };
 
-            contract.set_metadata(&ContractMetadata::new(
-                "Pausable Fungible Token".into(),
-                "PFT".into(),
-                18,
-            ));
+            contract.set_metadata(&ContractMetadata::new("Pausable Fungible Token", "PFT", 18));
 
             contract
         }

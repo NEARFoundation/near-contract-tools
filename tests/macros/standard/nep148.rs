@@ -12,10 +12,10 @@ impl DerivesFTMetadata {
         let mut contract = Self {};
 
         contract.set_metadata(
-            &ContractMetadata::new("Test Fungible Token".into(), "TFT".into(), 18)
-                .icon("https://example.com/icon.png".into())
-                .reference("https://example.com/metadata.json".into())
-                .reference_hash(Base64VecU8::from([97, 115, 100, 102].to_vec())),
+            &ContractMetadata::new("Test Fungible Token", "TFT", 18)
+                .icon("https://example.com/icon.png")
+                .reference("https://example.com/metadata.json")
+                .reference_hash(vec![97, 115, 100, 102]),
         );
 
         contract
