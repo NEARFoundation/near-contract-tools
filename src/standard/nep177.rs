@@ -53,7 +53,11 @@ impl ContractMetadata {
     /// Creates a new contract metadata, specifying the name, symbol, and
     /// optional base URI. Other fields are set to `None`.
     #[must_use]
-    pub fn new(name: impl Into<String>, symbol: impl Into<String>, base_uri: Option<String>) -> Self {
+    pub fn new(
+        name: impl Into<String>,
+        symbol: impl Into<String>,
+        base_uri: Option<String>,
+    ) -> Self {
         Self {
             spec: Self::SPEC.to_string(),
             name: name.into(),
